@@ -1,0 +1,789 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/global.css";
+
+const cloudinaryCloudName = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+const cloudinaryUploadPreset = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "";
+const formspreeEndpoint = import.meta.env.PUBLIC_FORMSPREE_ENDPOINT ?? "";
+const referencesLimit = 6;
+const maxImageSizeMb = 5;
+const maxImageWidth = 2560;
+const maxImageHeight = 2560;
+
+const roverMenuItems = [
+  { label: "GRAFFITI MURAL", href: "https://www.roversmart.com/pintura" },
+  { label: "PRINTS", href: "https://www.roversmart.com/prints" },
+  { label: "GRÁFICAS", href: "https://www.roversmart.com/diseo-grfico" },
+  { label: "VIDEOS", href: "https://www.roversmart.com/videos" },
+  { label: "CLIENTES", href: "https://www.roversmart.com/clientes" },
+  { label: "ENCARGOS/CONTACTO", href: "https://www.roversmart.com/contact", active: true }
+];
+---
+
+<BaseLayout
+  title="Cotiza tu mural"
+  description="Formulario de cotizacion para proyectos de muralismo, branding y arte mural."
+>
+  <header class="site-header-shell">
+    <div class="site-header page-shell page-shell--header">
+      <a class="site-logo" href="https://www.roversmart.com" aria-label="Ir a roversmart.com">
+        <img
+          src="https://dglb26w8rx2ld.cloudfront.net/000_clients/160215/file/1602159E5Mk1bl.png"
+          alt="Rover Smart"
+          loading="eager"
+        />
+      </a>
+      <nav class="site-nav" aria-label="Secciones principales de Rover Smart">
+        {
+          roverMenuItems.map((item) => (
+            <a
+              href={item.href}
+              class:list={[item.active && "is-active"]}
+              target="_self"
+              rel="noreferrer"
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Cotización para murales de autor</p>
+        <p class="hero-kicker">Arte urbano con criterio de dirección visual y ejecución de alto nivel.</p>
+        <h1>Proyectos murales con lenguaje artístico, precisión técnica y presencia de marca.</h1>
+        <p class="hero-text">
+          Pensado para encargos donde importan tanto la propuesta estética como la lectura del
+          espacio: intervenciones para marcas, festivales, arquitectura interior y superficies de gran formato.
+        </p>
+        <ul class="hero-points">
+          <li>Medidas, material y estado del muro</li>
+          <li>Condiciones del lugar y accesibilidad</li>
+          <li>Idea visual, estilo y nivel de detalle</li>
+          <li>Fecha estimada, urgencia y rango de presupuesto</li>
+        </ul>
+        <div class="hero-signals">
+          <span>+10 años de experiencia</span>
+          <span>Murales para festivales y marcas Tier A</span>
+          <span>Dirección visual + ejecución en terreno</span>
+        </div>
+      </div>
+      <aside class="hero-card">
+        <p class="card-label">Filtro inicial</p>
+        <p class="card-value">4-6 min</p>
+        <p class="card-copy">
+          Las cotizaciones se envían en un plazo de 3-5 días e incluyen una estimación
+          preliminar. El desarrollo de bocetos se cotiza aparte.
+        </p>
+        <div class="hero-metrics">
+          <div>
+            <strong>Formato</strong>
+            <span>Interiores, fachadas, activaciones y branding espacial</span>
+          </div>
+          <div>
+            <strong>Enfoque</strong>
+            <span>Graffiti refinado, composición editorial y ejecución profesional</span>
+          </div>
+        </div>
+        <a class="hero-link" href="#formulario">Ir al formulario</a>
+      </aside>
+    </section>
+
+    <section class="info-grid">
+      <article>
+        <span>01</span>
+        <h2>Muro</h2>
+        <p>Fotos, medidas, material, estado y protecciones necesarias.</p>
+      </article>
+      <article>
+        <span>02</span>
+        <h2>Lugar</h2>
+        <p>Ciudad, altura, acceso, exposicion y condiciones operativas.</p>
+      </article>
+      <article>
+        <span>03</span>
+        <h2>Proyecto</h2>
+        <p>Tipo de mural, referencias, estilo, uso y desarrollo del diseno.</p>
+      </article>
+      <article>
+        <span>04</span>
+        <h2>Cliente</h2>
+        <p>Presupuesto, tiempos, datos de contacto y perfil del encargo.</p>
+      </article>
+    </section>
+
+    <section class="form-section" id="formulario">
+      <div class="section-heading">
+        <p class="eyebrow">Solicitud inicial</p>
+        <h2>Completa el formulario</h2>
+        <p>
+          Este formulario reúne la información necesaria para preparar una cotización inicial
+          seria, con menos idas y vueltas y menos sorpresas durante la ejecución.
+        </p>
+      </div>
+
+      <form
+        class="quote-form"
+        data-quote-form
+        data-cloudinary-cloud-name={cloudinaryCloudName}
+        data-cloudinary-upload-preset={cloudinaryUploadPreset}
+        data-formspree-endpoint={formspreeEndpoint}
+      >
+        <fieldset>
+          <legend class="sr-only">1. Información básica del muro</legend>
+          <div class="section-card-head">
+            <p class="section-index">01</p>
+            <div>
+              <h3>Información básica del muro</h3>
+              <p>Base técnica para estimar materiales, preparación y superficie real a intervenir.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="full">
+              Fotografía frontal del muro
+              <input type="file" name="foto_frontal" accept="image/*" />
+              <small class="field-help">Máximo {maxImageSizeMb} MB y {maxImageWidth} x {maxImageHeight} px.</small>
+            </label>
+            <label class="full">
+              Foto del entorno
+              <input type="file" name="foto_entorno" accept="image/*" />
+              <small class="field-help">Máximo {maxImageSizeMb} MB y {maxImageWidth} x {maxImageHeight} px.</small>
+            </label>
+            <label>
+              Alto del muro (mts)
+              <input type="number" name="alto" placeholder="Ej: 2.8" min="0" step="0.1" data-dimension="alto" />
+            </label>
+            <label>
+              Ancho del muro (mts)
+              <input type="number" name="ancho" placeholder="Ej: 6.5" min="0" step="0.1" data-dimension="ancho" />
+            </label>
+            <label>
+              Material del muro
+              <select name="material">
+                <option value="">Selecciona una opción</option>
+                <option>Hormigón</option>
+                <option>Estuco</option>
+                <option>Ladrillo</option>
+                <option>Metal</option>
+                <option>Madera</option>
+              </select>
+            </label>
+            <label>
+              Estado del muro
+              <select name="estado">
+                <option value="">Selecciona una opción</option>
+                <option>Nuevo</option>
+                <option>Pintado</option>
+                <option>Con humedad</option>
+                <option>Con grietas</option>
+                <option>Con grafitis previos</option>
+              </select>
+            </label>
+            <label class="full">
+              Croquis automático o zona a intervenir
+              <input type="file" name="croquis" accept="image/*" />
+              <small class="field-help">Máximo {maxImageSizeMb} MB y {maxImageWidth} x {maxImageHeight} px.</small>
+            </label>
+            <label class="full">
+              Escala humana
+              <select name="escala_humana">
+                <option value="">Selecciona una opción</option>
+                <option>Incluye persona en la foto</option>
+                <option>Incluye puerta o elemento de escala</option>
+                <option>No disponible</option>
+              </select>
+            </label>
+            <label class="full">
+              Descripción breve del estado actual
+              <textarea name="descripcion_muro" rows="4" placeholder="Describe textura, reparaciones necesarias o cualquier detalle relevante."></textarea>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="sr-only">2. Condiciones del lugar</legend>
+          <div class="section-card-head">
+            <p class="section-index">02</p>
+            <div>
+              <h3>Condiciones del lugar</h3>
+              <p>Factores logísticos que pueden cambiar tiempos, montaje y costos de ejecución.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label>
+              Ciudad o barrio
+              <input type="text" name="ubicacion" placeholder="Ej: Providencia, Santiago" />
+            </label>
+            <label>
+              Altura del mural
+              <select name="altura">
+                <option value="">Selecciona una opción</option>
+                <option>A nivel de suelo</option>
+                <option>Segundo piso</option>
+                <option>Más alto (requiere andamio o elevador)</option>
+              </select>
+            </label>
+            <label>
+              Accesibilidad
+              <select name="acceso">
+                <option value="">Selecciona una opción</option>
+                <option>Fácil acceso</option>
+                <option>Interior</option>
+                <option>Calle transitada</option>
+              </select>
+            </label>
+            <label>
+              Exposición
+              <select name="exposicion">
+                <option value="">Selecciona una opción</option>
+                <option>Sol directo</option>
+                <option>Interior</option>
+                <option>Exterior con lluvia</option>
+              </select>
+            </label>
+            <label class="full">
+              Consideraciones logísticas
+              <textarea name="logistica" rows="3" placeholder="Ej: requiere andamio, permiso municipal, horario restringido, estacionamiento, etc."></textarea>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="sr-only">3. Tipo de proyecto</legend>
+          <div class="section-card-head">
+            <p class="section-index">03</p>
+            <div>
+              <h3>Tipo de proyecto</h3>
+              <p>Dirección estética, uso del mural y complejidad visual esperada para la propuesta.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label>
+              Tipo de mural
+              <select name="tipo_mural">
+                <option value="">Selecciona una opción</option>
+                <option>Decorativo</option>
+                <option>Realista</option>
+                <option>Tipográfico</option>
+                <option>Ilustración artística</option>
+                <option>Branding / logo</option>
+              </select>
+            </label>
+            <label>
+              ¿Qué nivel de detalle buscas?
+              <select name="detalle" data-detail-level>
+                <option value="">Selecciona una opción</option>
+                <option>Bajo (formas simples)</option>
+                <option>Medio</option>
+                <option>Alto (realismo o mucho detalle)</option>
+              </select>
+            </label>
+            <label>
+              ¿Quién desarrolla el diseño?
+              <select name="diseno">
+                <option value="">Selecciona una opción</option>
+                <option>Yo quiero que el artista lo diseñe</option>
+                <option>Ya tengo un diseño</option>
+              </select>
+            </label>
+            <label>
+              ¿Para qué será el mural?
+              <select name="uso">
+                <option value="">Selecciona una opción</option>
+                <option>Decorativo personal</option>
+                <option>Negocio / marketing</option>
+                <option>Evento</option>
+                <option>Espacio público</option>
+              </select>
+            </label>
+            <label class="full">
+              Estilo del mural
+              <div class="chip-group">
+                <label><input type="checkbox" name="estilo" value="surrealista" /> <span>surrealista</span></label>
+                <label><input type="checkbox" name="estilo" value="botánico" /> <span>botánico</span></label>
+                <label><input type="checkbox" name="estilo" value="abstracto" /> <span>abstracto</span></label>
+                <label><input type="checkbox" name="estilo" value="infantil" /> <span>infantil</span></label>
+                <label><input type="checkbox" name="estilo" value="naturaleza" /> <span>naturaleza</span></label>
+                <label><input type="checkbox" name="estilo" value="retrato" /> <span>retrato</span></label>
+                <label><input type="checkbox" name="estilo" value="tipografía" /> <span>tipografía</span></label>
+              </div>
+            </label>
+            <label class="full">
+              Idea del cliente
+              <textarea name="idea" rows="5" placeholder="Describe qué quieres transmitir, dónde irá el mural y cualquier referencia relevante."></textarea>
+            </label>
+            <label class="full">
+              Referencias visuales
+              <input type="file" name="referencias" multiple accept="image/*" data-references-input data-references-limit={referencesLimit} />
+              <small class="field-help">
+                Puedes subir hasta {referencesLimit} referencias. Máximo {maxImageSizeMb} MB y {maxImageWidth} x {maxImageHeight} px.
+                <span data-references-count>0 seleccionadas</span>
+              </small>
+            </label>
+            <label class="full">
+              Protección final
+              <div class="chip-group">
+                <label><input type="checkbox" name="proteccion" value="Sellado protector UV" /> <span>Sellado protector UV</span></label>
+                <label><input type="checkbox" name="proteccion" value="Barniz antigrafiti" /> <span>Barniz antigrafiti</span></label>
+              </div>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="sr-only">4. Tiempo y presupuesto</legend>
+          <div class="section-card-head">
+            <p class="section-index">04</p>
+            <div>
+              <h3>Tiempo y presupuesto</h3>
+              <p>Contexto de plazos, urgencia y rango de inversión para filtrar la solicitud.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="full">
+              Fecha estimada del proyecto
+              <input type="date" name="fecha" />
+            </label>
+            <label>
+              Rango de presupuesto
+              <select name="presupuesto">
+                <option value="">Selecciona una opción</option>
+                <option>Menos de $500.000 CLP</option>
+                <option>Entre $500.000 y $1.500.000 CLP</option>
+                <option>Entre $1.500.000 y $3.000.000 CLP</option>
+                <option>Más de $3.000.000 CLP</option>
+              </select>
+            </label>
+            <label>
+              Urgencia
+              <select name="urgencia">
+                <option value="">Selecciona una opción</option>
+                <option>Flexible</option>
+                <option>Fecha específica</option>
+              </select>
+            </label>
+            <label class="full">
+              Comentarios sobre tiempos
+              <textarea name="comentarios_tiempo" rows="3" placeholder="Ej: inauguración, campaña de marca, temporada alta, etc."></textarea>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="sr-only">5. Datos del cliente</legend>
+          <div class="section-card-head">
+            <p class="section-index">05</p>
+            <div>
+              <h3>Datos del cliente</h3>
+              <p>Información de contacto y tipo de encargo para dar seguimiento a la cotización.</p>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label>
+              Nombre
+              <input type="text" name="nombre" placeholder="Tu nombre" />
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" placeholder="nombre@correo.com" required />
+            </label>
+            <label>
+              Teléfono / WhatsApp
+              <input type="tel" name="telefono" placeholder="+56 9 ..." />
+            </label>
+            <label>
+              Tipo de cliente
+              <select name="tipo_cliente">
+                <option value="">Selecciona una opción</option>
+                <option>Particular</option>
+                <option>Empresa</option>
+                <option>Municipalidad</option>
+                <option>Restaurante / local</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="form-footer">
+          <p>
+            Las cotizaciones se envían en un plazo de 3-5 días e incluyen una estimación
+            preliminar. El desarrollo de bocetos se cotiza aparte.
+          </p>
+          <button type="submit" data-submit-button>Enviar solicitud</button>
+        </div>
+        <aside class="estimate-card" aria-live="polite">
+          <p class="estimate-label">Resumen preliminar</p>
+          <p class="estimate-value"><span data-area-value>0.0</span> m²</p>
+          <p class="estimate-copy" data-estimate-copy>
+            Ingresa medidas y nivel de detalle para obtener una referencia rápida del alcance.
+          </p>
+          <p class="estimate-status" data-submit-status>
+            Demo frontend: el envío aún no está conectado a un servicio externo.
+          </p>
+        </aside>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("[data-quote-form]");
+    const altoInput = document.querySelector('[data-dimension="alto"]');
+    const anchoInput = document.querySelector('[data-dimension="ancho"]');
+    const detailInput = document.querySelector("[data-detail-level]");
+    const areaValue = document.querySelector("[data-area-value]");
+    const estimateCopy = document.querySelector("[data-estimate-copy]");
+    const submitStatus = document.querySelector("[data-submit-status]");
+    const submitButton = document.querySelector("[data-submit-button]");
+    const referencesInput = document.querySelector("[data-references-input]");
+    const referencesCount = document.querySelector("[data-references-count]");
+    const imageInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+    const maxImageSizeBytes = 5 * 1024 * 1024;
+    const maxImageWidth = 2560;
+    const maxImageHeight = 2560;
+
+    const detailMap = {
+      "Bajo (formas simples)": "complejidad baja y ejecución más directa.",
+      Medio: "complejidad media con trabajo de composición y terminaciones.",
+      "Alto (realismo o mucho detalle)": "complejidad alta con mayor dedicación de diseño y producción."
+    };
+
+    const updateEstimate = () => {
+      const alto = Number(altoInput?.value || 0);
+      const ancho = Number(anchoInput?.value || 0);
+      const area = alto > 0 && ancho > 0 ? alto * ancho : 0;
+      const detail = detailInput instanceof HTMLSelectElement ? detailInput.value : "";
+
+      if (areaValue) {
+        areaValue.textContent = area.toFixed(1);
+      }
+
+      if (!estimateCopy) return;
+
+      if (!area) {
+        estimateCopy.textContent =
+          "Ingresa medidas y nivel de detalle para obtener una referencia rápida del alcance.";
+        return;
+      }
+
+      const scope =
+        area < 5 ? "Proyecto pequeño." : area < 15 ? "Proyecto mediano." : "Proyecto de gran formato.";
+      const complexity = detailMap[detail] || "Define el nivel de detalle para afinar la estimación.";
+
+      estimateCopy.textContent = `${scope} Superficie estimada: ${area.toFixed(1)} m², ${complexity}`;
+    };
+
+    altoInput?.addEventListener("input", updateEstimate);
+    anchoInput?.addEventListener("input", updateEstimate);
+    detailInput?.addEventListener("change", updateEstimate);
+
+    const syncReferencesCount = () => {
+      if (!(referencesInput instanceof HTMLInputElement) || !referencesCount) return;
+
+      const filesCount = referencesInput.files?.length || 0;
+      referencesCount.textContent = `${filesCount} seleccionada${filesCount === 1 ? "" : "s"}`;
+    };
+
+    const getImageDimensions = (file) =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        image.onload = () => {
+          resolve({ width: image.width, height: image.height });
+          URL.revokeObjectURL(objectUrl);
+        };
+
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("No se pudo leer una de las imágenes seleccionadas."));
+        };
+
+        image.src = objectUrl;
+      });
+
+    const fileToImage = (file) =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        image.onload = () => {
+          resolve({ image, objectUrl });
+        };
+
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("No se pudo leer una de las imágenes seleccionadas."));
+        };
+
+        image.src = objectUrl;
+      });
+
+    const canvasToBlob = (canvas, quality) =>
+      new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("No se pudo comprimir una de las imágenes seleccionadas."));
+              return;
+            }
+
+            resolve(blob);
+          },
+          "image/jpeg",
+          quality
+        );
+      });
+
+    const optimizeImageFile = async (file) => {
+      const { image, objectUrl } = await fileToImage(file);
+      const needsResize = image.width > maxImageWidth || image.height > maxImageHeight;
+      const needsCompression = file.size > maxImageSizeBytes;
+
+      if (!needsResize && !needsCompression) {
+        URL.revokeObjectURL(objectUrl);
+        return file;
+      }
+
+      const ratio = Math.min(maxImageWidth / image.width, maxImageHeight / image.height, 1);
+      const width = Math.round(image.width * ratio);
+      const height = Math.round(image.height * ratio);
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        URL.revokeObjectURL(objectUrl);
+        throw new Error("No se pudo preparar la compresión de imágenes.");
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      context.drawImage(image, 0, 0, width, height);
+
+      let quality = 0.86;
+      let blob = await canvasToBlob(canvas, quality);
+
+      while (blob.size > maxImageSizeBytes && quality > 0.45) {
+        quality -= 0.08;
+        blob = await canvasToBlob(canvas, quality);
+      }
+
+      URL.revokeObjectURL(objectUrl);
+
+      if (blob.size > maxImageSizeBytes) {
+        throw new Error("Una imagen sigue siendo demasiado pesada incluso después de comprimirla.");
+      }
+
+      return new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
+        type: "image/jpeg",
+        lastModified: Date.now()
+      });
+    };
+
+    const replaceInputFiles = (input, files) => {
+      const dataTransfer = new DataTransfer();
+      files.forEach((file) => dataTransfer.items.add(file));
+      input.files = dataTransfer.files;
+    };
+
+    referencesInput?.addEventListener("change", async () => {
+      if (!(referencesInput instanceof HTMLInputElement)) return;
+
+      const limit = Number(referencesInput.dataset.referencesLimit || "0");
+      let files = Array.from(referencesInput.files || []);
+
+      if (limit > 0 && files.length > limit) {
+        files = files.slice(0, limit);
+        replaceInputFiles(referencesInput, files);
+
+        if (submitStatus) {
+          submitStatus.textContent = `Solo se permiten hasta ${limit} referencias visuales. Se conservaron las primeras ${limit}.`;
+        }
+      }
+
+      try {
+        const optimizedFiles = [];
+
+        for (const file of files) {
+          const optimizedFile = await optimizeImageFile(file);
+          optimizedFiles.push(optimizedFile);
+        }
+
+        replaceInputFiles(referencesInput, optimizedFiles);
+
+        if (submitStatus && optimizedFiles.some((file, index) => file !== files[index])) {
+          submitStatus.textContent = "Algunas referencias se optimizaron automáticamente para acelerar el envío.";
+        }
+      } catch (error) {
+        referencesInput.value = "";
+        if (submitStatus) {
+          submitStatus.textContent =
+            error instanceof Error ? error.message : "Una referencia visual no cumple los requisitos.";
+        }
+      }
+
+      syncReferencesCount();
+    });
+
+    imageInputs
+      .filter((input) => input !== referencesInput)
+      .forEach((input) => {
+        input.addEventListener("change", async () => {
+          if (!(input instanceof HTMLInputElement)) return;
+
+          const files = Array.from(input.files || []);
+          if (!files.length) return;
+
+          try {
+            const optimizedFiles = [];
+
+            for (const file of files) {
+              const optimizedFile = await optimizeImageFile(file);
+              optimizedFiles.push(optimizedFile);
+            }
+
+            replaceInputFiles(input, optimizedFiles);
+
+            if (submitStatus && optimizedFiles.some((file, index) => file !== files[index])) {
+              submitStatus.textContent = "Una o más imágenes se optimizaron automáticamente antes del envío.";
+            }
+          } catch (error) {
+            input.value = "";
+            if (submitStatus) {
+              submitStatus.textContent =
+                error instanceof Error ? error.message : "Una imagen no cumple los requisitos.";
+            }
+          }
+        });
+      });
+
+    const uploadFileToCloudinary = async (file, cloudName, uploadPreset) => {
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append("file", file);
+      cloudinaryFormData.append("upload_preset", uploadPreset);
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: cloudinaryFormData
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo subir una imagen a Cloudinary.");
+      }
+
+      return response.json();
+    };
+
+    const collectValues = (formData) => {
+      const payload = {};
+
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) continue;
+
+        if (payload[key]) {
+          payload[key] = Array.isArray(payload[key]) ? [...payload[key], value] : [payload[key], value];
+        } else {
+          payload[key] = value;
+        }
+      }
+
+      return payload;
+    };
+
+    const appendUploadedAssets = async (formElement, payload, cloudName, uploadPreset) => {
+      const fileInputs = Array.from(formElement.querySelectorAll('input[type="file"]'));
+      const uploadedGroups = {};
+
+      for (const input of fileInputs) {
+        const files = Array.from(input.files || []);
+        if (!files.length) continue;
+
+        uploadedGroups[input.name] = [];
+
+        for (const file of files) {
+          const uploadResult = await uploadFileToCloudinary(file, cloudName, uploadPreset);
+          uploadedGroups[input.name].push(uploadResult.secure_url);
+        }
+      }
+
+      Object.entries(uploadedGroups).forEach(([key, urls]) => {
+        payload[`${key}_urls`] = urls.join("\n");
+      });
+    };
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const cloudName = form.dataset.cloudinaryCloudName || "";
+      const uploadPreset = form.dataset.cloudinaryUploadPreset || "";
+      const formspreeEndpointValue = form.dataset.formspreeEndpoint || "";
+
+      if (!cloudName || !uploadPreset || !formspreeEndpointValue) {
+        if (submitStatus) {
+          submitStatus.textContent =
+            "Faltan variables de entorno. Configura Cloudinary y Formspree antes de enviar.";
+        }
+        return;
+      }
+
+      const formData = new FormData(form);
+      const payload = collectValues(formData);
+      payload.superficie_estimada_m2 = areaValue?.textContent || "0.0";
+      payload.resumen_preliminar = estimateCopy?.textContent || "";
+
+      try {
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Enviando...";
+        }
+
+        if (submitStatus) {
+          submitStatus.textContent = "Subiendo imágenes y preparando la cotización...";
+        }
+
+        await appendUploadedAssets(form, payload, cloudName, uploadPreset);
+
+        if (submitStatus) {
+          submitStatus.textContent = "Enviando solicitud a tu correo...";
+        }
+
+        const response = await fetch(formspreeEndpointValue, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("Formspree rechazó el envío.");
+        }
+
+        form.reset();
+        updateEstimate();
+        syncReferencesCount();
+
+        if (submitStatus) {
+          submitStatus.textContent =
+            "Solicitud enviada correctamente. Revisa tu correo de destino en Formspree para confirmar la recepción.";
+        }
+      } catch (error) {
+        if (submitStatus) {
+          submitStatus.textContent =
+            error instanceof Error ? error.message : "Ocurrió un problema al enviar la solicitud.";
+        }
+      } finally {
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Enviar solicitud";
+        }
+      }
+    });
+  </script>
+</BaseLayout>
