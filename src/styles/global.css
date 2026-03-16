@@ -27,6 +27,10 @@ body {
   background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
 }
 
+body.mobile-menu-open {
+  overflow: hidden;
+}
+
 main {
   display: block;
 }
@@ -610,14 +614,12 @@ input[type="file"] {
     top: 64px;
     left: 0;
     right: 0;
-    bottom: 0;
     display: grid;
     align-content: start;
     background: #050505;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 12px 0 24px;
     z-index: 3;
-    overflow-y: auto;
     opacity: 0;
     transform: translateY(-18px);
     transition: opacity 220ms ease, transform 220ms ease;
