@@ -582,6 +582,7 @@ input[type="file"] {
   .site-logo {
     transform: none;
     position: static;
+    order: 1;
   }
 
   .site-logo-desktop {
@@ -591,7 +592,7 @@ input[type="file"] {
   .site-logo-mobile {
     display: block;
     width: auto;
-    height: 36px;
+    height: 40px;
   }
 
   .site-nav {
@@ -600,6 +601,7 @@ input[type="file"] {
 
   .mobile-menu-toggle {
     display: inline-flex;
+    order: 2;
     z-index: 2;
   }
 
