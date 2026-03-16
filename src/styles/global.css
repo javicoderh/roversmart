@@ -65,11 +65,15 @@ main {
   transform: translateX(-38px);
 }
 
-.site-logo img {
+.site-logo-image {
   width: 148px;
   height: auto;
   display: block;
   filter: none;
+}
+
+.site-logo-desktop {
+  display: block;
 }
 
 .site-logo-mobile {
@@ -589,7 +593,7 @@ input[type="file"] {
   .site-logo-mobile {
     display: block;
     width: auto;
-    height: 36px;
+    height: 32px;
   }
 
   .site-nav {
