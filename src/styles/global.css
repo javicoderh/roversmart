@@ -117,12 +117,22 @@ main {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
 .mobile-menu-toggle svg {
   width: 20px;
   height: 20px;
   display: block;
+}
+
+.mobile-menu-toggle:focus,
+.mobile-menu-toggle:focus-visible,
+.mobile-menu-toggle:active {
+  outline: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .mobile-menu-toggle path {
