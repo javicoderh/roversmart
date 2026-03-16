@@ -31,16 +31,6 @@ body.mobile-menu-open {
   overflow: hidden;
 }
 
-body.mobile-menu-open::after {
-  content: "";
-  position: fixed;
-  inset: 64px 0 0;
-  background: rgba(9, 9, 9, 0.22);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 2;
-}
-
 main {
   display: block;
 }
