@@ -621,8 +621,14 @@ input[type="file"] {
     padding: 12px 0 24px;
     z-index: 3;
     opacity: 0;
-    transform: translateY(-18px);
-    transition: opacity 220ms ease, transform 220ms ease;
+    transform-origin: top center;
+    transform: translateY(-10px) scaleY(0.94);
+    filter: blur(6px);
+    transition:
+      opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity, filter;
   }
 
   .mobile-nav[hidden] {
@@ -631,7 +637,8 @@ input[type="file"] {
 
   .mobile-nav.is-open {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scaleY(1);
+    filter: blur(0);
   }
 
   .mobile-nav a {
@@ -645,6 +652,40 @@ input[type="file"] {
     letter-spacing: 0;
     line-height: 1.4;
     text-transform: none;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .mobile-nav.is-open a {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .mobile-nav.is-open a:nth-child(1) {
+    transition-delay: 40ms;
+  }
+
+  .mobile-nav.is-open a:nth-child(2) {
+    transition-delay: 65ms;
+  }
+
+  .mobile-nav.is-open a:nth-child(3) {
+    transition-delay: 90ms;
+  }
+
+  .mobile-nav.is-open a:nth-child(4) {
+    transition-delay: 115ms;
+  }
+
+  .mobile-nav.is-open a:nth-child(5) {
+    transition-delay: 140ms;
+  }
+
+  .mobile-nav.is-open a:nth-child(6) {
+    transition-delay: 165ms;
   }
 
   .mobile-nav a::after {
