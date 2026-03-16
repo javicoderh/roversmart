@@ -112,20 +112,24 @@ main {
   background: transparent;
   border: 0;
   padding: 0;
-  width: 22px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 4px;
   cursor: pointer;
 }
 
-.mobile-menu-toggle span {
+.mobile-menu-toggle svg {
+  width: 20px;
+  height: 20px;
   display: block;
-  width: 22px;
-  height: 1px;
-  background: #ffffff;
+}
+
+.mobile-menu-toggle path {
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  fill: none;
 }
 
 .hero {
