@@ -55,6 +55,7 @@ main {
   padding: 17px 28px;
   background: #050505;
   flex-wrap: wrap;
+  position: relative;
 }
 
 .site-logo {
@@ -69,6 +70,10 @@ main {
   height: auto;
   display: block;
   filter: none;
+}
+
+.site-logo-mobile {
+  display: none;
 }
 
 .site-nav {
@@ -95,6 +100,32 @@ main {
 
 .site-nav a.is-active {
   color: var(--accent);
+}
+
+.mobile-menu-toggle,
+.mobile-nav {
+  display: none;
+}
+
+.mobile-menu-toggle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 22px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: #ffffff;
 }
 
 .hero {
@@ -499,8 +530,6 @@ input[type="file"] {
 
 @media (max-width: 960px) {
   .site-header {
-    grid-template-columns: 1fr;
-    justify-items: center;
     gap: 16px;
   }
 
@@ -520,20 +549,75 @@ input[type="file"] {
 
 @media (max-width: 720px) {
   .page-shell {
-    width: min(100% - 20px, 1180px);
-    padding-top: 20px;
+    width: min(100% - 16px, 1180px);
+    padding-top: 16px;
+    padding-bottom: 64px;
   }
 
   .site-header {
-    padding: 16px 12px;
+    justify-content: center;
+    gap: 0;
+    min-height: 64px;
+    padding: 14px 14px;
+  }
+
+  .site-logo {
+    transform: none;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .site-logo-desktop {
+    display: none;
+  }
+
+  .site-logo-mobile {
+    display: block;
+    width: auto;
+    height: 36px;
   }
 
   .site-nav {
-    gap: 14px;
+    display: none;
   }
 
-  .site-nav a {
-    font-size: 0.72rem;
+  .mobile-menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+    z-index: 2;
+  }
+
+  .mobile-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: grid;
+    background: #050505;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 0 14px;
+    z-index: 3;
+  }
+
+  .mobile-nav[hidden] {
+    display: none;
+  }
+
+  .mobile-nav a {
+    display: block;
+    padding: 10px 18px;
+    color: #ffffff;
+    text-decoration: none;
+    font-family: "Courier New", monospace;
+    font-size: 8px;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
+  }
+
+  .mobile-nav a.is-active {
+    color: var(--accent);
   }
 
   .hero-copy,
@@ -541,7 +625,27 @@ input[type="file"] {
   .quote-form fieldset,
   .form-footer,
   .estimate-card {
-    padding: 22px;
+    padding: 18px;
+  }
+
+  .hero {
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .hero-copy {
+    padding: 24px 18px 20px;
+  }
+
+  .hero-card {
+    padding: 18px;
+  }
+
+  .eyebrow,
+  .card-label,
+  .info-grid span {
+    font-size: 0.68rem;
+    margin-bottom: 10px;
   }
 
   .field-grid,
@@ -551,25 +655,168 @@ input[type="file"] {
   }
 
   h1 {
-    font-size: clamp(1.45rem, 8vw, 1.9rem);
+    font-size: clamp(1.28rem, 7.5vw, 1.7rem);
+    line-height: 1.18;
+    margin-bottom: 14px;
+  }
+
+  .hero-kicker {
+    font-size: 0.72rem;
+    margin-bottom: 10px;
+  }
+
+  .hero-text,
+  .card-copy,
+  .section-heading p,
+  .quote-form p,
+  .info-grid p,
+  .estimate-copy,
+  .estimate-status {
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .hero-points {
+    gap: 8px;
+    margin-top: 16px;
+    padding-left: 16px;
+    font-size: 0.92rem;
+  }
+
+  .hero-signals {
+    margin-top: 18px;
+    gap: 8px;
+  }
+
+  .hero-signals span {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .card-value {
+    font-size: 1.55rem;
+  }
+
+  .hero-metrics {
+    gap: 12px;
+    padding: 14px 0 18px;
+  }
+
+  .hero-metrics strong {
+    font-size: 0.76rem;
+  }
+
+  .hero-metrics span {
+    font-size: 0.88rem;
   }
 
   .section-card-head {
     grid-template-columns: 1fr;
     gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
   }
 
   .section-index {
     min-width: 48px;
     width: 48px;
     height: 48px;
+    font-size: 0.8rem;
   }
 
   .section-card-head h3 {
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .field-help {
     flex-direction: column;
+    gap: 4px;
+    font-size: 0.76rem;
+  }
+
+  .section-heading h2 {
+    font-size: 1.45rem;
+    margin-bottom: 10px;
+  }
+
+  .info-grid {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .info-grid article {
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .info-grid h2 {
+    font-size: 0.98rem;
+    margin-bottom: 8px;
+  }
+
+  .quote-form {
+    gap: 14px;
+  }
+
+  .quote-form fieldset {
+    padding: 18px;
+  }
+
+  label {
+    gap: 6px;
+    font-size: 0.94rem;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 48px;
+    padding: 13px 14px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 112px;
+  }
+
+  input[type="file"] {
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .chip-group {
+    gap: 8px;
+  }
+
+  .chip-group label {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    font-size: 0.92rem;
+  }
+
+  .form-footer {
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .form-footer p {
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .hero-link,
+  button {
+    width: 100%;
+    min-height: 50px;
+  }
+
+  .estimate-value {
+    font-size: 2rem;
+  }
+
+  .estimate-label {
+    font-size: 0.68rem;
   }
 }

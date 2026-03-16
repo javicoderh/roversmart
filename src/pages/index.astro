@@ -26,14 +26,41 @@ const roverMenuItems = [
 >
   <header class="site-header-shell">
     <div class="site-header page-shell page-shell--header">
+      <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" data-mobile-menu-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Abrir menú</span>
+      </button>
       <a class="site-logo" href="https://www.roversmart.com" aria-label="Ir a roversmart.com">
         <img
+          class="site-logo-desktop"
           src="https://dglb26w8rx2ld.cloudfront.net/000_clients/160215/file/1602159E5Mk1bl.png"
+          alt="Rover Smart"
+          loading="eager"
+        />
+        <img
+          class="site-logo-mobile"
+          src="https://dglb26w8rx2ld.cloudfront.net/000_clients/160215/file/160215GWI0OymY.png"
           alt="Rover Smart"
           loading="eager"
         />
       </a>
       <nav class="site-nav" aria-label="Secciones principales de Rover Smart">
+        {
+          roverMenuItems.map((item) => (
+            <a
+              href={item.href}
+              class:list={[item.active && "is-active"]}
+              target="_self"
+              rel="noreferrer"
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Secciones principales de Rover Smart en móvil" data-mobile-nav hidden>
         {
           roverMenuItems.map((item) => (
             <a
@@ -441,6 +468,8 @@ const roverMenuItems = [
     const referencesInput = document.querySelector("[data-references-input]");
     const referencesCount = document.querySelector("[data-references-count]");
     const imageInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+    const mobileMenuToggle = document.querySelector("[data-mobile-menu-toggle]");
+    const mobileNav = document.querySelector("[data-mobile-nav]");
     const maxImageSizeBytes = 5 * 1024 * 1024;
     const maxImageWidth = 2560;
     const maxImageHeight = 2560;
@@ -659,6 +688,25 @@ const roverMenuItems = [
           }
         });
       });
+
+    mobileMenuToggle?.addEventListener("click", () => {
+      if (!(mobileNav instanceof HTMLElement) || !(mobileMenuToggle instanceof HTMLButtonElement)) return;
+
+      const isOpen = mobileMenuToggle.getAttribute("aria-expanded") === "true";
+      mobileMenuToggle.setAttribute("aria-expanded", String(!isOpen));
+      mobileNav.hidden = isOpen;
+      mobileNav.classList.toggle("is-open", !isOpen);
+    });
+
+    mobileNav?.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        if (!(mobileNav instanceof HTMLElement) || !(mobileMenuToggle instanceof HTMLButtonElement)) return;
+
+        mobileMenuToggle.setAttribute("aria-expanded", "false");
+        mobileNav.hidden = true;
+        mobileNav.classList.remove("is-open");
+      });
+    });
 
     const uploadFileToCloudinary = async (file, cloudName, uploadPreset) => {
       const cloudinaryFormData = new FormData();
