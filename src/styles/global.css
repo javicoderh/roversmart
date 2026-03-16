@@ -606,24 +606,36 @@ input[type="file"] {
   }
 
   .mobile-nav {
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 64px;
     left: 0;
     right: 0;
+    bottom: 0;
     display: grid;
+    align-content: start;
     background: #050505;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 10px 0 14px;
+    padding: 12px 0 24px;
     z-index: 3;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(-18px);
+    transition: opacity 220ms ease, transform 220ms ease;
   }
 
   .mobile-nav[hidden] {
     display: none;
   }
 
+  .mobile-nav.is-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .mobile-nav a {
     display: block;
-    padding: 10px 18px;
+    position: relative;
+    padding: 16px 18px;
     color: #ffffff;
     text-decoration: none;
     font-family: "Courier New", monospace;
@@ -631,6 +643,25 @@ input[type="file"] {
     letter-spacing: 0;
     line-height: 1.4;
     text-transform: none;
+  }
+
+  .mobile-nav a::after {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.32) 50%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  }
+
+  .mobile-nav a:last-child::after {
+    display: none;
   }
 
   .mobile-nav a.is-active {
