@@ -31,6 +31,16 @@ body.mobile-menu-open {
   overflow: hidden;
 }
 
+body.mobile-menu-open::after {
+  content: "";
+  position: fixed;
+  inset: 64px 0 0;
+  background: rgba(9, 9, 9, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2;
+}
+
 main {
   display: block;
 }
@@ -606,7 +616,7 @@ input[type="file"] {
   .mobile-menu-toggle {
     display: inline-flex;
     order: 2;
-    z-index: 2;
+    z-index: 5;
   }
 
   .mobile-nav {
@@ -619,7 +629,7 @@ input[type="file"] {
     background: #050505;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 12px 0 24px;
-    z-index: 3;
+    z-index: 4;
     opacity: 0;
     transform-origin: top center;
     transform: translateY(-10px) scaleY(0.94);
