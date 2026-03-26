@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/global.css";
+import fox2dImage from "../assets/fox2d.png";
+import foxImage from "../assets/fox.png";
+import foxMidImage from "../assets/foxMid.png";
 
 const cloudinaryCloudName = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 const cloudinaryUploadPreset = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "";
@@ -20,9 +23,9 @@ const roverMenuItems = [
 ];
 
 const quoteSteps = [
-  { index: "01", label: "Muro", title: "Muro", caption: "Fotos, medidas y base." },
-  { index: "02", label: "Lugar", title: "Ubica el proyecto", caption: "Acceso y condiciones." },
-  { index: "03", label: "Idea", title: "Marca la dirección", caption: "Estilo, uso y referencias." },
+  { index: "01", label: "Proceso", title: "Desgloce del proceso", caption: "Cómo funciona la cotización" },
+  { index: "02", label: "Muro / soporte", title: "Muro / soporte", caption: "Medida fotos y ubicación" },
+  { index: "03", label: "Diseño / concepto", title: "Diseño / concepto", caption: "A mayor nivel de complejidad" },
   { index: "04", label: "Cierre", title: "Déjalo listo", caption: "Fecha, presupuesto y contacto." }
 ];
 ---
@@ -88,9 +91,9 @@ const quoteSteps = [
   <main class="page-shell mural-page">
     <section class="hero-panel">
       <div class="hero-panel__copy">
-        <p class="eyebrow">Cotizador mural</p>
-        <h1>Cotiza tu mural en 4 pasos.</h1>
-        <p class="hero-note">precio aprox en tiempo real.</p>
+        <p class="eyebrow">Cotizador de murales</p>
+        <h1>Cotiza tu mural</h1>
+        <p class="hero-note">Solicitud y proceso de cotización.</p>
         <div class="hero-tags" aria-label="Características del flujo">
           <span>Respuesta 3-5 días</span>
           <span>Bocetos aparte</span>
@@ -127,7 +130,6 @@ const quoteSteps = [
               <span class="step-chip__circle">{step.index}</span>
               <span class="step-chip__text">
                 <strong>{step.label}</strong>
-                <small>{step.caption}</small>
               </span>
             </button>
           ))
@@ -152,142 +154,130 @@ const quoteSteps = [
                     <div>
                       <p class="section-tag">{step.label}</p>
                       <h2>{step.title}</h2>
-                      <p>{step.caption}</p>
+                      {
+                        index === 2 ? (
+                          <div class="section-caption-flow">
+                            <p>{step.caption}:</p>
+                            <span>+ tiempo de ejecución</span>
+                            <span aria-hidden="true">↓</span>
+                            <span>+ materiales / colores</span>
+                            <span aria-hidden="true">↓</span>
+                            <span>+ valor</span>
+                          </div>
+                        ) : (
+                          <p>{step.caption}</p>
+                        )
+                      }
                     </div>
                   </div>
 
                   {index === 0 && (
-                    <div class="field-grid">
-                      <label class="full">
-                        Frente
-                        <input type="file" name="foto_frontal" accept="image/*" />
-                        <small class="field-help">Hasta {maxImageSizeMb} MB.</small>
-                      </label>
-                      <label class="full">
-                        Entorno
-                        <input type="file" name="foto_entorno" accept="image/*" />
-                        <small class="field-help">Hasta {maxImageSizeMb} MB.</small>
-                      </label>
-                      <label>
-                        Alto
-                        <input type="number" name="alto" placeholder="2.8" min="0" step="0.1" data-dimension="alto" />
-                      </label>
-                      <label>
-                        Ancho
-                        <input type="number" name="ancho" placeholder="6.5" min="0" step="0.1" data-dimension="ancho" />
-                      </label>
-                      <label>
-                        Material
-                        <select name="material">
-                          <option value="">Seleccionar</option>
-                          <option>Hormigón</option>
-                          <option>Estuco</option>
-                          <option>Ladrillo</option>
-                          <option>Metal</option>
-                          <option>Madera</option>
-                        </select>
-                      </label>
-                      <label>
-                        Estado
-                        <select name="estado">
-                          <option value="">Seleccionar</option>
-                          <option>Nuevo</option>
-                          <option>Pintado</option>
-                          <option>Con humedad</option>
-                          <option>Con grietas</option>
-                          <option>Con grafitis previos</option>
-                        </select>
-                      </label>
-                      <label class="full">
-                        Zona
-                        <input type="file" name="croquis" accept="image/*" />
-                        <small class="field-help">Marca la parte a intervenir.</small>
-                      </label>
-                      <label>
-                        Escala
-                        <select name="escala_humana">
-                          <option value="">Seleccionar</option>
-                          <option>Persona en foto</option>
-                          <option>Puerta o referencia</option>
-                          <option>No disponible</option>
-                        </select>
-                      </label>
-                      <label class="full">
-                        Nota
-                        <textarea name="descripcion_muro" rows="4" placeholder="Textura, reparaciones, observaciones."></textarea>
-                      </label>
+                    <div class="process-overview">
+                      <ol>
+                        <li>Cliente completa el formulario de cotización.</li>
+                        <li>Cliente recibe la cotización en 3-5 dias habiles aprox desde la solicitud.</li>
+                        <li>Reunion cliente-artista.</li>
+                        <li>De ser aprobada la cotización, el cliente debe abonar el 50% del item diseño.</li>
+                        <li>Comienza el proceso de feedback para el diseño.</li>
+                        <li>Aprobado el diseño, cliente debe abonar 50% restande de este + item materiales y logistica.</li>
+                        <li>Proceso compra de materiales.</li>
+                        <li>Ejecución del mural.</li>
+                        <li>Entrega del mural.</li>
+                        <li>Pago final [máximo 5 días habiles desde la entrega].</li>
+                      </ol>
                     </div>
                   )}
 
                   {index === 1 && (
                     <div class="field-grid">
                       <label>
-                        Ciudad
-                        <input type="text" name="ubicacion" placeholder="Providencia, Santiago" />
+                        Alto [mts]
+                        <input type="number" name="alto" placeholder="2.8 mts" min="0" step="0.1" data-dimension="alto" />
                       </label>
                       <label>
-                        Altura
-                        <select name="altura">
-                          <option value="">Seleccionar</option>
-                          <option>A nivel de suelo</option>
-                          <option>Segundo piso</option>
-                          <option>Más alto</option>
-                        </select>
-                      </label>
-                      <label>
-                        Acceso
-                        <select name="acceso">
-                          <option value="">Seleccionar</option>
-                          <option>Fácil acceso</option>
-                          <option>Interior</option>
-                          <option>Calle transitada</option>
-                        </select>
-                      </label>
-                      <label>
-                        Exposición
-                        <select name="exposicion">
-                          <option value="">Seleccionar</option>
-                          <option>Sol directo</option>
-                          <option>Interior</option>
-                          <option>Exterior con lluvia</option>
-                        </select>
+                        Ancho [mts]
+                        <input type="number" name="ancho" placeholder="6.5 mts" min="0" step="0.1" data-dimension="ancho" />
                       </label>
                       <label class="full">
-                        Logística
-                        <textarea name="logistica" rows="4" placeholder="Andamio, permisos, horario, estacionamiento."></textarea>
+                        Fotografías muro/soporte [máx. 4]
+                        <span class="file-upload-control">
+                          <span class="file-upload-trigger">Adjuntar fotografías</span>
+                          <input
+                            class="file-upload-input"
+                            type="file"
+                            name="foto_frontal"
+                            accept="image/*"
+                            multiple
+                            data-max-files="4"
+                          />
+                        </span>
+                        <small class="field-help">Hasta 4 imágenes de {maxImageSizeMb} MB cada una.</small>
+                      </label>
+                      <label>
+                        Ubicación
+                        <input type="text" name="ubicacion" placeholder="pais, ciudad, dirección" />
+                      </label>
+                      <label>
+                        Estado muro/ soporte
+                        <select name="estado">
+                          <option value="">Seleccionar</option>
+                          <option>Listo para pintar</option>
+                          <option>Requiere mantención</option>
+                        </select>
+                      </label>
+                      <div class="availability-grid full">
+                        <label class="circle-option">
+                          <input type="checkbox" name="bodega_disponible" value="Sí" />
+                          <span class="circle-option__control" aria-hidden="true"></span>
+                          <span>¿bodegas disponibles?</span>
+                        </label>
+                        <label class="circle-option">
+                          <input type="checkbox" name="estacionamiento_disponible" value="Sí" />
+                          <span class="circle-option__control" aria-hidden="true"></span>
+                          <span>¿estacionamiento disponible?</span>
+                        </label>
+                      </div>
+                      <label class="full">
+                        Notas adicionales
+                        <textarea
+                          name="descripcion_muro"
+                          rows="4"
+                          placeholder="Detalles extra a considerar; flujo masivo de gente, vehículos transitando cerca, obstáculos de acceso para materiales, etc."
+                        ></textarea>
                       </label>
                     </div>
                   )}
 
                   {index === 2 && (
                     <div class="field-grid">
-                      <label>
-                        Tipo
-                        <select name="tipo_mural">
-                          <option value="">Seleccionar</option>
-                          <option>Decorativo</option>
-                          <option>Realista</option>
-                          <option>Tipográfico</option>
-                          <option>Ilustración artística</option>
-                          <option>Branding / logo</option>
-                        </select>
-                      </label>
-                      <label>
-                        Detalle
-                        <select name="detalle" data-detail-level>
-                          <option value="">Seleccionar</option>
-                          <option>Bajo (formas simples)</option>
-                          <option>Medio</option>
-                          <option>Alto (realismo o mucho detalle)</option>
-                        </select>
-                      </label>
-                      <label>
-                        Diseño
-                        <select name="diseno">
-                          <option value="">Seleccionar</option>
-                          <option>Lo diseña el artista</option>
-                          <option>Ya tengo un diseño</option>
-                        </select>
+                      <label class="full">
+                        Nivel de complejidad [puedes seleccionar mas de un nivel]
+                        <div class="mural-type-grid">
+                          <label class="mural-type-option">
+                            <img class="mural-type-option__image" src={fox2dImage.src} alt="" aria-hidden="true" />
+                            <span class="mural-type-option__choice">
+                              <input type="checkbox" name="tipo_mural" value="Minimal" />
+                              <span class="circle-option__control" aria-hidden="true"></span>
+                            </span>
+                            <span class="mural-type-option__label">Minimal</span>
+                          </label>
+                          <label class="mural-type-option">
+                            <img class="mural-type-option__image" src={foxMidImage.src} alt="" aria-hidden="true" />
+                            <span class="mural-type-option__choice">
+                              <input type="checkbox" name="tipo_mural" value="Intermedio" />
+                              <span class="circle-option__control" aria-hidden="true"></span>
+                            </span>
+                            <span class="mural-type-option__label">Intermedio</span>
+                          </label>
+                          <label class="mural-type-option">
+                            <img class="mural-type-option__image" src={foxImage.src} alt="" aria-hidden="true" />
+                            <span class="mural-type-option__choice">
+                              <input type="checkbox" name="tipo_mural" value="Detallado" />
+                              <span class="circle-option__control" aria-hidden="true"></span>
+                            </span>
+                            <span class="mural-type-option__label">Detallado</span>
+                          </label>
+                        </div>
                       </label>
                       <label>
                         Uso
@@ -300,23 +290,11 @@ const quoteSteps = [
                         </select>
                       </label>
                       <label class="full">
-                        Estilo
-                        <div class="chip-group">
-                          <label><input type="checkbox" name="estilo" value="surrealista" /> <span>surrealista</span></label>
-                          <label><input type="checkbox" name="estilo" value="botánico" /> <span>botánico</span></label>
-                          <label><input type="checkbox" name="estilo" value="abstracto" /> <span>abstracto</span></label>
-                          <label><input type="checkbox" name="estilo" value="infantil" /> <span>infantil</span></label>
-                          <label><input type="checkbox" name="estilo" value="naturaleza" /> <span>naturaleza</span></label>
-                          <label><input type="checkbox" name="estilo" value="retrato" /> <span>retrato</span></label>
-                          <label><input type="checkbox" name="estilo" value="tipografía" /> <span>tipografía</span></label>
-                        </div>
+                        Concepto creativo
+                        <textarea name="idea" rows="5" placeholder="desarrolla la idea de tu mural..."></textarea>
                       </label>
                       <label class="full">
-                        Idea
-                        <textarea name="idea" rows="5" placeholder="Qué quieres transmitir y qué referencias te acercan a eso."></textarea>
-                      </label>
-                      <label class="full">
-                        Referencias
+                        Referencias (opcional)
                         <input type="file" name="referencias" multiple accept="image/*" data-references-input data-references-limit={referencesLimit} />
                         <small class="field-help">
                           Hasta {referencesLimit} imágenes.
@@ -325,9 +303,12 @@ const quoteSteps = [
                       </label>
                       <label class="full">
                         Protección
-                        <div class="chip-group">
-                          <label><input type="checkbox" name="proteccion" value="Sellado protector UV" /> <span>UV</span></label>
-                          <label><input type="checkbox" name="proteccion" value="Barniz antigrafiti" /> <span>Antigrafiti</span></label>
+                        <div class="protection-options">
+                          <label class="circle-option">
+                            <input type="checkbox" name="proteccion" value="Sellante" />
+                            <span class="circle-option__control" aria-hidden="true"></span>
+                            <span>Sellante</span>
+                          </label>
                         </div>
                       </label>
                     </div>
@@ -340,26 +321,12 @@ const quoteSteps = [
                         <input type="date" name="fecha" />
                       </label>
                       <label>
-                        Presupuesto
-                        <select name="presupuesto">
-                          <option value="">Seleccionar</option>
-                          <option>Menos de $500.000 CLP</option>
-                          <option>Entre $500.000 y $1.500.000 CLP</option>
-                          <option>Entre $1.500.000 y $3.000.000 CLP</option>
-                          <option>Más de $3.000.000 CLP</option>
-                        </select>
-                      </label>
-                      <label>
                         Urgencia
                         <select name="urgencia">
                           <option value="">Seleccionar</option>
                           <option>Flexible</option>
                           <option>Fecha específica</option>
                         </select>
-                      </label>
-                      <label class="full">
-                        Tiempos
-                        <textarea name="comentarios_tiempo" rows="3" placeholder="Inauguración, campaña, fecha clave."></textarea>
                       </label>
                       <label>
                         Nombre
@@ -405,23 +372,10 @@ const quoteSteps = [
                 </fieldset>
               ))
             }
-          </div>
-
-          <aside class="estimate-card" aria-live="polite">
-            <p class="estimate-label">Superficie</p>
-            <p class="estimate-value"><span data-area-value>0.0</span> m²</p>
-            <p class="estimate-price" data-price-value>$0 CLP</p>
-            <p class="estimate-rate" data-rate-value>Base mural: $45.000 CLP/m²</p>
-            <p class="estimate-copy" data-estimate-copy>
-              Sube el muro y define el detalle.
-            </p>
-            <p class="estimate-market-note">
-              Estimación referencial basada en rangos de muralismo y graffiti profesional.
-            </p>
-            <p class="estimate-status" data-submit-status>
+            <p class="form-status" data-submit-status aria-live="polite">
               Respuesta estimada: 3-5 días.
             </p>
-          </aside>
+          </div>
         </div>
       </form>
     </section>
@@ -435,23 +389,6 @@ const quoteSteps = [
     const prevButtons = Array.from(document.querySelectorAll("[data-step-prev]"));
     const startFlowButton = document.querySelector("[data-start-flow]");
     const formShell = document.querySelector("[data-form-shell]");
-    const altoInput = document.querySelector('[data-dimension="alto"]');
-    const anchoInput = document.querySelector('[data-dimension="ancho"]');
-    const detailInput = document.querySelector("[data-detail-level]");
-    const materialInput = document.querySelector('[name="material"]');
-    const estadoInput = document.querySelector('[name="estado"]');
-    const alturaInput = document.querySelector('[name="altura"]');
-    const accesoInput = document.querySelector('[name="acceso"]');
-    const exposicionInput = document.querySelector('[name="exposicion"]');
-    const tipoMuralInput = document.querySelector('[name="tipo_mural"]');
-    const disenoInput = document.querySelector('[name="diseno"]');
-    const usoInput = document.querySelector('[name="uso"]');
-    const urgenciaInput = document.querySelector('[name="urgencia"]');
-    const protectionInputs = Array.from(document.querySelectorAll('input[name="proteccion"]'));
-    const areaValue = document.querySelector("[data-area-value]");
-    const priceValue = document.querySelector("[data-price-value]");
-    const rateValue = document.querySelector("[data-rate-value]");
-    const estimateCopy = document.querySelector("[data-estimate-copy]");
     const submitStatus = document.querySelector("[data-submit-status]");
     const submitButton = document.querySelector("[data-submit-button]");
     const referencesInput = document.querySelector("[data-references-input]");
@@ -464,135 +401,6 @@ const quoteSteps = [
     const maxImageHeight = 2560;
     let currentStep = 0;
     let flowStarted = false;
-    const basePricePerSquareMeter = 45000;
-
-    const detailMap = {
-      "Bajo (formas simples)": "lectura directa.",
-      Medio: "detalle medio.",
-      "Alto (realismo o mucho detalle)": "detalle alto."
-    };
-
-    const formatCurrency = (value) =>
-      new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0
-      }).format(Math.round(value));
-
-    const getValue = (input) => (input instanceof HTMLInputElement || input instanceof HTMLSelectElement ? input.value : "");
-
-    const getProtectionMultiplier = () => {
-      let multiplier = 1;
-
-      protectionInputs.forEach((input) => {
-        if (!(input instanceof HTMLInputElement) || !input.checked) return;
-        if (input.value === "Sellado protector UV") multiplier += 0.05;
-        if (input.value === "Barniz antigrafiti") multiplier += 0.08;
-      });
-
-      return multiplier;
-    };
-
-    const getAreaMultiplier = (area) => {
-      if (!area) return 1;
-      if (area < 5) return 1.32;
-      if (area < 15) return 1.12;
-      if (area < 40) return 1;
-      if (area < 80) return 0.92;
-      return 0.86;
-    };
-
-    const getSelectionMultiplier = () => {
-      const multipliers = [
-        {
-          value: getValue(detailInput),
-          map: {
-            "Bajo (formas simples)": 0.9,
-            Medio: 1,
-            "Alto (realismo o mucho detalle)": 1.28
-          }
-        },
-        {
-          value: getValue(materialInput),
-          map: {
-            Hormigón: 1,
-            Estuco: 1,
-            Ladrillo: 1.08,
-            Metal: 1.12,
-            Madera: 1.07
-          }
-        },
-        {
-          value: getValue(estadoInput),
-          map: {
-            Nuevo: 1,
-            Pintado: 1.04,
-            "Con humedad": 1.18,
-            "Con grietas": 1.15,
-            "Con grafitis previos": 1.12
-          }
-        },
-        {
-          value: getValue(alturaInput),
-          map: {
-            "A nivel de suelo": 1,
-            "Segundo piso": 1.12,
-            "Más alto": 1.24
-          }
-        },
-        {
-          value: getValue(accesoInput),
-          map: {
-            "Fácil acceso": 1,
-            Interior: 1.05,
-            "Calle transitada": 1.08
-          }
-        },
-        {
-          value: getValue(exposicionInput),
-          map: {
-            "Sol directo": 1.04,
-            Interior: 1,
-            "Exterior con lluvia": 1.08
-          }
-        },
-        {
-          value: getValue(tipoMuralInput),
-          map: {
-            Decorativo: 0.94,
-            Realista: 1.3,
-            Tipográfico: 1.02,
-            "Ilustración artística": 1.18,
-            "Branding / logo": 1.08
-          }
-        },
-        {
-          value: getValue(disenoInput),
-          map: {
-            "Lo diseña el artista": 1.16,
-            "Ya tengo un diseño": 1
-          }
-        },
-        {
-          value: getValue(usoInput),
-          map: {
-            "Decorativo personal": 0.98,
-            "Negocio / marketing": 1.08,
-            Evento: 1.12,
-            "Espacio público": 1.1
-          }
-        },
-        {
-          value: getValue(urgenciaInput),
-          map: {
-            Flexible: 1,
-            "Fecha específica": 1.14
-          }
-        }
-      ];
-
-      return multipliers.reduce((accumulator, item) => accumulator * (item.map[item.value] || 1), getProtectionMultiplier());
-    };
 
     const setStep = (targetStep) => {
       currentStep = Math.min(Math.max(targetStep, 0), stepPanels.length - 1);
@@ -623,42 +431,6 @@ const quoteSteps = [
         formShell.focus();
         formShell.scrollIntoView({ behavior: "smooth", block: "start" });
       });
-    };
-
-    const updateEstimate = () => {
-      const alto = Number(altoInput?.value || 0);
-      const ancho = Number(anchoInput?.value || 0);
-      const area = alto > 0 && ancho > 0 ? alto * ancho : 0;
-      const detail = detailInput instanceof HTMLSelectElement ? detailInput.value : "";
-      const totalMultiplier = getSelectionMultiplier() * getAreaMultiplier(area);
-      const estimatedRate = basePricePerSquareMeter * totalMultiplier;
-      const estimatedTotal = area * estimatedRate;
-
-      if (areaValue) {
-        areaValue.textContent = area.toFixed(1);
-      }
-
-      if (priceValue) {
-        priceValue.textContent = area ? formatCurrency(estimatedTotal) : "$0 CLP";
-      }
-
-      if (rateValue) {
-        rateValue.textContent = area
-          ? `${formatCurrency(estimatedRate)} / m²`
-          : `Base mural: ${formatCurrency(basePricePerSquareMeter)} / m²`;
-      }
-
-      if (!estimateCopy) return;
-
-      if (!area) {
-        estimateCopy.textContent = "Sube el muro y define el detalle.";
-        return;
-      }
-
-      const scope = area < 5 ? "Formato chico." : area < 15 ? "Formato medio." : "Gran formato.";
-      const complexity = detailMap[detail] || "Falta detalle.";
-
-      estimateCopy.textContent = `${scope} ${area.toFixed(1)} m², ${complexity}`;
     };
 
     const syncReferencesCount = () => {
@@ -785,6 +557,47 @@ const quoteSteps = [
       return payload;
     };
 
+    const toList = (value) => {
+      if (Array.isArray(value)) return value;
+      if (typeof value === "string" && value) return [value];
+      return [];
+    };
+
+    const yesNoFromValue = (value) => (value ? "Sí" : "No");
+
+    const buildSubmissionPayload = (payload) => ({
+      step_01_desgloce_del_proceso: [
+        "1. Cliente completa el formulario de cotización.",
+        "2. Cliente recibe la cotización en 3-5 dias habiles aprox desde la solicitud.",
+        "3. Reunion cliente-artista.",
+        "4. De ser aprobada la cotización, el cliente debe abonar el 50% del item diseño.",
+        "5. Comienza el proceso de feedback para el diseño.",
+        "6. Aprobado el diseño, cliente debe abonar 50% restande de este + item materiales y logistica.",
+        "7. Proceso compra de materiales.",
+        "8. Ejecución del mural.",
+        "9. Entrega del mural.",
+        "10. Pago final [máximo 5 días habiles desde la entrega]."
+      ].join("\n"),
+      step_02_muro_soporte_medidas: `Alto: ${payload.alto || "-"} | Ancho: ${payload.ancho || "-"}`,
+      step_02_fotografias_muro_soporte: payload.foto_frontal_urls || "Sin adjuntos",
+      step_02_ubicacion: payload.ubicacion || "-",
+      step_02_estado_muro_soporte: payload.estado || "-",
+      step_02_bodegas_disponibles: yesNoFromValue(payload.bodega_disponible),
+      step_02_estacionamiento_disponible: yesNoFromValue(payload.estacionamiento_disponible),
+      step_02_notas_adicionales: payload.descripcion_muro || "-",
+      step_03_nivel_de_complejidad: toList(payload.tipo_mural).join(", ") || "-",
+      step_03_uso: payload.uso || "-",
+      step_03_concepto_creativo: payload.idea || "-",
+      step_03_referencias: payload.referencias_urls || "Sin adjuntos",
+      step_03_proteccion: toList(payload.proteccion).join(", ") || "-",
+      step_04_fecha: payload.fecha || "-",
+      step_04_urgencia: payload.urgencia || "-",
+      step_04_nombre: payload.nombre || "-",
+      step_04_email: payload.email || "-",
+      step_04_whatsapp: payload.telefono || "-",
+      step_04_tipo_de_cliente: payload.tipo_cliente || "-"
+    });
+
     const appendUploadedAssets = async (formElement, payload, cloudName, uploadPreset) => {
       const fileInputs = Array.from(formElement.querySelectorAll('input[type="file"]'));
       const uploadedGroups = {};
@@ -838,24 +651,6 @@ const quoteSteps = [
       }
     });
 
-    altoInput?.addEventListener("input", updateEstimate);
-    anchoInput?.addEventListener("input", updateEstimate);
-    detailInput?.addEventListener("change", updateEstimate);
-    [
-      materialInput,
-      estadoInput,
-      alturaInput,
-      accesoInput,
-      exposicionInput,
-      tipoMuralInput,
-      disenoInput,
-      usoInput,
-      urgenciaInput
-    ].forEach((input) => {
-      input?.addEventListener("change", updateEstimate);
-    });
-    protectionInputs.forEach((input) => input.addEventListener("change", updateEstimate));
-
     referencesInput?.addEventListener("change", async () => {
       if (!(referencesInput instanceof HTMLInputElement)) return;
 
@@ -901,8 +696,18 @@ const quoteSteps = [
         input.addEventListener("change", async () => {
           if (!(input instanceof HTMLInputElement)) return;
 
-          const files = Array.from(input.files || []);
+          const limit = Number(input.dataset.maxFiles || "0");
+          let files = Array.from(input.files || []);
           if (!files.length) return;
+
+          if (limit > 0 && files.length > limit) {
+            files = files.slice(0, limit);
+            replaceInputFiles(input, files);
+
+            if (submitStatus) {
+              submitStatus.textContent = `Máximo ${limit} imágenes.`;
+            }
+          }
 
           try {
             const optimizedFiles = [];
@@ -965,9 +770,7 @@ const quoteSteps = [
       }
 
       const formData = new FormData(form);
-      const payload = collectValues(formData);
-      payload.superficie_estimada_m2 = areaValue?.textContent || "0.0";
-      payload.resumen_preliminar = estimateCopy?.textContent || "";
+      const rawPayload = collectValues(formData);
 
       try {
         if (submitButton instanceof HTMLButtonElement) {
@@ -979,7 +782,9 @@ const quoteSteps = [
           submitStatus.textContent = "Subiendo imágenes...";
         }
 
-        await appendUploadedAssets(form, payload, cloudName, uploadPreset);
+        await appendUploadedAssets(form, rawPayload, cloudName, uploadPreset);
+
+        const payload = buildSubmissionPayload(rawPayload);
 
         if (submitStatus) {
           submitStatus.textContent = "Enviando solicitud...";
@@ -1000,7 +805,6 @@ const quoteSteps = [
 
         form.reset();
         setStep(0);
-        updateEstimate();
         syncReferencesCount();
 
         if (submitStatus) {
@@ -1020,7 +824,6 @@ const quoteSteps = [
     });
 
     setStep(0);
-    updateEstimate();
     syncReferencesCount();
   </script>
 </BaseLayout>
