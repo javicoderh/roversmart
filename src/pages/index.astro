@@ -23,10 +23,10 @@ const roverMenuItems = [
 ];
 
 const quoteSteps = [
-  { index: "01", label: "Proceso", title: "Desgloce del proceso", caption: "Cómo funciona la cotización" },
-  { index: "02", label: "Muro / soporte", title: "Muro / soporte", caption: "Medida fotos y ubicación" },
+  { index: "01", label: "Proceso", title: "Desglose del proceso", caption: "" },
+  { index: "02", label: "Muro / soporte", title: "Muro / soporte", caption: "Medidas, fotos y ubicación" },
   { index: "03", label: "Diseño / concepto", title: "Diseño / concepto", caption: "A mayor nivel de complejidad" },
-  { index: "04", label: "Cierre", title: "Déjalo listo", caption: "Fecha, presupuesto y contacto." }
+  { index: "04", label: "Datos / contacto", title: "Datos / contacto", caption: "Datos de contacto." }
 ];
 ---
 
@@ -164,9 +164,10 @@ const quoteSteps = [
                             <span aria-hidden="true">↓</span>
                             <span>+ valor</span>
                           </div>
-                        ) : (
+                        ) : step.caption ? (
                           <p>{step.caption}</p>
-                        )
+                        ) : null
+                        
                       }
                     </div>
                   </div>
@@ -175,15 +176,15 @@ const quoteSteps = [
                     <div class="process-overview">
                       <ol>
                         <li>Cliente completa el formulario de cotización.</li>
-                        <li>Cliente recibe la cotización en 3-5 dias habiles aprox desde la solicitud.</li>
-                        <li>Reunion cliente-artista.</li>
-                        <li>De ser aprobada la cotización, el cliente debe abonar el 50% del item diseño.</li>
+                        <li>Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.</li>
+                        <li>De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.</li>
+                        <li>Reunión cliente-artista.</li>
                         <li>Comienza el proceso de feedback para el diseño.</li>
-                        <li>Aprobado el diseño, cliente debe abonar 50% restande de este + item materiales y logistica.</li>
-                        <li>Proceso compra de materiales.</li>
+                        <li>Aprobado el diseño, cliente debe abonar el 50% restante de este + ítem materiales y logística.</li>
+                        <li>Proceso de compra de materiales.</li>
                         <li>Ejecución del mural.</li>
                         <li>Entrega del mural.</li>
-                        <li>Pago final [máximo 5 días habiles desde la entrega].</li>
+                        <li>Pago final [máximo 5 días hábiles desde la entrega].</li>
                       </ol>
                     </div>
                   )}
@@ -215,7 +216,7 @@ const quoteSteps = [
                       </label>
                       <label>
                         Ubicación
-                        <input type="text" name="ubicacion" placeholder="pais, ciudad, dirección" />
+                        <input type="text" name="ubicacion" placeholder="país, ciudad, dirección" />
                       </label>
                       <label>
                         Estado muro/ soporte
@@ -251,7 +252,7 @@ const quoteSteps = [
                   {index === 2 && (
                     <div class="field-grid">
                       <label class="full">
-                        Nivel de complejidad [puedes seleccionar mas de un nivel]
+                        Nivel de complejidad [puedes cotizar más de un nivel]
                         <div class="mural-type-grid">
                           <label class="mural-type-option">
                             <img class="mural-type-option__image" src={fox2dImage.src} alt="" aria-hidden="true" />
@@ -280,7 +281,7 @@ const quoteSteps = [
                         </div>
                       </label>
                       <label>
-                        Uso
+                        Contexto del mural
                         <select name="uso">
                           <option value="">Seleccionar</option>
                           <option>Decorativo personal</option>
@@ -291,7 +292,7 @@ const quoteSteps = [
                       </label>
                       <label class="full">
                         Concepto creativo
-                        <textarea name="idea" rows="5" placeholder="desarrolla la idea de tu mural..."></textarea>
+                        <textarea name="idea" rows="5" placeholder="Desarrolla la idea de tu mural..."></textarea>
                       </label>
                       <label class="full">
                         Referencias (opcional)
@@ -316,39 +317,25 @@ const quoteSteps = [
 
                   {index === 3 && (
                     <div class="field-grid">
-                      <label class="full">
-                        Fecha
-                        <input type="date" name="fecha" />
-                      </label>
-                      <label>
-                        Urgencia
-                        <select name="urgencia">
-                          <option value="">Seleccionar</option>
-                          <option>Flexible</option>
-                          <option>Fecha específica</option>
-                        </select>
-                      </label>
                       <label>
                         Nombre
-                        <input type="text" name="nombre" placeholder="Tu nombre" />
+                        <input type="text" name="nombre" placeholder="tu nombre / nombre empresa / marca" />
                       </label>
                       <label>
-                        Email
+                        E-mail
                         <input type="email" name="email" placeholder="nombre@correo.com" required />
                       </label>
                       <label>
-                        WhatsApp
+                        Teléfono
                         <input type="tel" name="telefono" placeholder="+56 9 ..." />
                       </label>
-                      <label>
-                        Cliente
-                        <select name="tipo_cliente">
-                          <option value="">Seleccionar</option>
-                          <option>Particular</option>
-                          <option>Empresa</option>
-                          <option>Municipalidad</option>
-                          <option>Restaurante / local</option>
-                        </select>
+                      <label class="full">
+                        Descripción del cliente
+                        <textarea
+                          name="tipo_cliente"
+                          rows="4"
+                          placeholder="describe a la persona, institución o marca que solicita el mural."
+                        ></textarea>
                       </label>
                     </div>
                   )}
@@ -568,15 +555,15 @@ const quoteSteps = [
     const buildSubmissionPayload = (payload) => ({
       step_01_desgloce_del_proceso: [
         "1. Cliente completa el formulario de cotización.",
-        "2. Cliente recibe la cotización en 3-5 dias habiles aprox desde la solicitud.",
-        "3. Reunion cliente-artista.",
-        "4. De ser aprobada la cotización, el cliente debe abonar el 50% del item diseño.",
+        "2. Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.",
+        "3. De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.",
+        "4. Reunión cliente-artista.",
         "5. Comienza el proceso de feedback para el diseño.",
-        "6. Aprobado el diseño, cliente debe abonar 50% restande de este + item materiales y logistica.",
-        "7. Proceso compra de materiales.",
+        "6. Aprobado el diseño, cliente debe abonar el 50% restante de este + ítem materiales y logística.",
+        "7. Proceso de compra de materiales.",
         "8. Ejecución del mural.",
         "9. Entrega del mural.",
-        "10. Pago final [máximo 5 días habiles desde la entrega]."
+        "10. Pago final [máximo 5 días hábiles desde la entrega]."
       ].join("\n"),
       step_02_muro_soporte_medidas: `Alto: ${payload.alto || "-"} | Ancho: ${payload.ancho || "-"}`,
       step_02_fotografias_muro_soporte: payload.foto_frontal_urls || "Sin adjuntos",
@@ -590,12 +577,10 @@ const quoteSteps = [
       step_03_concepto_creativo: payload.idea || "-",
       step_03_referencias: payload.referencias_urls || "Sin adjuntos",
       step_03_proteccion: toList(payload.proteccion).join(", ") || "-",
-      step_04_fecha: payload.fecha || "-",
-      step_04_urgencia: payload.urgencia || "-",
       step_04_nombre: payload.nombre || "-",
       step_04_email: payload.email || "-",
       step_04_whatsapp: payload.telefono || "-",
-      step_04_tipo_de_cliente: payload.tipo_cliente || "-"
+      step_04_descripcion_del_cliente: payload.tipo_cliente || "-"
     });
 
     const appendUploadedAssets = async (formElement, payload, cloudName, uploadPreset) => {
