@@ -138,47 +138,57 @@ const muralImages = [
   "https://dglb26w8rx2ld.cloudfront.net/000_clients/160215/page/1602151497oReT.jpg"
 ];
 
+const initialPreloadCount = 8;
+const visibleCardCount = 4;
 const currentIndex = ref(0);
+const loadedImages = ref([]);
+const isGalleryReady = ref(false);
+const isGhostVisible = ref(true);
 const isModalOpen = ref(false);
 const modalImageIndex = ref(0);
 const animatedPreview = ref(null);
 const modalImageVisible = ref(false);
 const modalDialog = ref(null);
 const cardElements = new Map();
+const loadedImageSet = new Set();
 let intervalId = 0;
 let previewTimeoutId = 0;
+let ghostTimeoutId = 0;
 
-const cards = computed(() =>
-  Array.from({ length: 4 }, (_, index) => {
-    const imageIndex = (currentIndex.value + index) % muralImages.length;
+const cards = computed(() => {
+  const pool = loadedImages.value.length ? loadedImages.value : muralImages.slice(0, visibleCardCount);
+
+  return Array.from({ length: visibleCardCount }, (_, index) => {
+    const imageIndex = (currentIndex.value + index) % pool.length;
 
     return {
       id: `smart-gallery-slot-${index + 1}`,
-      imageKey: `${imageIndex}-${muralImages[imageIndex]}`,
-      src: muralImages[imageIndex],
+      imageKey: `${imageIndex}-${pool[imageIndex]}`,
+      src: pool[imageIndex],
       alt: `Mural Rover Smart ${imageIndex + 1}`,
       className: `slot-${index + 1}`
     };
-  })
-);
+  });
+});
+
+const currentModalImage = computed(() => loadedImages.value[modalImageIndex.value] || "");
 
 onMounted(() => {
-  startLoop();
+  void initializeGallery();
 });
 
 onBeforeUnmount(() => {
   stopLoop();
   clearPreviewTimeout();
+  clearGhostTimeout();
 });
-
-const currentModalImage = computed(() => muralImages[modalImageIndex.value] || "");
 
 function startLoop() {
   stopLoop();
 
   intervalId = window.setInterval(() => {
-    if (!isModalOpen.value) {
-      currentIndex.value = (currentIndex.value + 1) % muralImages.length;
+    if (!isModalOpen.value && loadedImages.value.length) {
+      currentIndex.value = (currentIndex.value + 1) % loadedImages.value.length;
     }
   }, 3000);
 }
@@ -187,6 +197,76 @@ function stopLoop() {
   if (intervalId) {
     window.clearInterval(intervalId);
     intervalId = 0;
+  }
+}
+
+function clearPreviewTimeout() {
+  if (previewTimeoutId) {
+    window.clearTimeout(previewTimeoutId);
+    previewTimeoutId = 0;
+  }
+}
+
+function clearGhostTimeout() {
+  if (ghostTimeoutId) {
+    window.clearTimeout(ghostTimeoutId);
+    ghostTimeoutId = 0;
+  }
+}
+
+function revealGallery() {
+  if (isGalleryReady.value) return;
+
+  isGalleryReady.value = true;
+  startLoop();
+  clearGhostTimeout();
+  ghostTimeoutId = window.setTimeout(() => {
+    isGhostVisible.value = false;
+    ghostTimeoutId = 0;
+  }, 260);
+}
+
+function preloadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(src);
+    image.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+    image.src = src;
+  });
+}
+
+function registerLoadedImage(src) {
+  if (loadedImageSet.has(src)) return;
+
+  loadedImageSet.add(src);
+  loadedImages.value.push(src);
+
+  if (!isGalleryReady.value && loadedImages.value.length >= initialPreloadCount) {
+    revealGallery();
+  }
+}
+
+async function initializeGallery() {
+  const initialBatch = muralImages.slice(0, initialPreloadCount);
+  const initialResults = await Promise.allSettled(initialBatch.map(preloadImage));
+
+  initialResults.forEach((result) => {
+    if (result.status === "fulfilled") {
+      registerLoadedImage(result.value);
+    }
+  });
+
+  void preloadRemainingImages(initialPreloadCount);
+}
+
+async function preloadRemainingImages(startIndex) {
+  for (const src of muralImages.slice(startIndex)) {
+    try {
+      const loadedSrc = await preloadImage(src);
+      registerLoadedImage(loadedSrc);
+    } catch {
+      continue;
+    }
   }
 }
 
@@ -200,11 +280,13 @@ function setCardRef(imageKey, element) {
 }
 
 function openModalFromGallery() {
+  if (!isGalleryReady.value || !loadedImages.value.length) return;
+
   const rightmostCard = cards.value[cards.value.length - 1];
   if (!rightmostCard) return;
 
   const sourceElement = cardElements.get(rightmostCard.imageKey);
-  modalImageIndex.value = (currentIndex.value + cards.value.length - 1) % muralImages.length;
+  modalImageIndex.value = (currentIndex.value + cards.value.length - 1) % loadedImages.value.length;
   isModalOpen.value = true;
   modalImageVisible.value = false;
   stopLoop();
@@ -265,11 +347,13 @@ function closeModal() {
 }
 
 function showNextImage() {
-  modalImageIndex.value = (modalImageIndex.value + 1) % muralImages.length;
+  if (!loadedImages.value.length) return;
+  modalImageIndex.value = (modalImageIndex.value + 1) % loadedImages.value.length;
 }
 
 function showPreviousImage() {
-  modalImageIndex.value = (modalImageIndex.value - 1 + muralImages.length) % muralImages.length;
+  if (!loadedImages.value.length) return;
+  modalImageIndex.value = (modalImageIndex.value - 1 + loadedImages.value.length) % loadedImages.value.length;
 }
 
 function handleModalKeydown(event) {
@@ -283,32 +367,37 @@ function handleModalKeydown(event) {
     showPreviousImage();
   }
 }
-
-function clearPreviewTimeout() {
-  if (previewTimeoutId) {
-    window.clearTimeout(previewTimeoutId);
-    previewTimeoutId = 0;
-  }
-}
 </script>
 
 <template>
   <Teleport to="#smartgallery-root">
     <div class="smart-gallery-overlay" aria-hidden="true">
       <div class="smart-gallery-grid">
-        <section class="smart-gallery-stack" @click="openModalFromGallery">
+        <section
+          class="smart-gallery-stack"
+          :class="{ 'is-ready': isGalleryReady, 'is-ghost-only': !isGalleryReady }"
+          @click="openModalFromGallery"
+        >
+          <div v-if="isGhostVisible" class="smart-gallery-ghost" aria-hidden="true">
+            <div class="smart-gallery-ghost-card slot-1"></div>
+            <div class="smart-gallery-ghost-card slot-2"></div>
+            <div class="smart-gallery-ghost-card slot-3"></div>
+            <div class="smart-gallery-ghost-card slot-4"></div>
+          </div>
+
           <TransitionGroup
             name="smart-gallery-shift"
             tag="div"
             class="smart-gallery-track"
           >
             <article
-            v-for="card in cards"
-            :key="card.imageKey"
-            class="smart-gallery-card"
-            :class="card.className"
-            :ref="(element) => setCardRef(card.imageKey, element)"
-          >
+              v-for="card in cards"
+              v-show="isGalleryReady"
+              :key="card.imageKey"
+              class="smart-gallery-card"
+              :class="card.className"
+              :ref="(element) => setCardRef(card.imageKey, element)"
+            >
               <img :src="card.src" :alt="card.alt" loading="lazy" />
             </article>
           </TransitionGroup>
@@ -387,24 +476,54 @@ function clearPreviewTimeout() {
   cursor: zoom-in;
 }
 
+.smart-gallery-stack.is-ghost-only {
+  cursor: default;
+}
+
 .smart-gallery-track {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
+.smart-gallery-ghost {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 260ms ease, transform 320ms ease;
+}
+
+.smart-gallery-stack.is-ready .smart-gallery-ghost {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.smart-gallery-ghost-card,
 .smart-gallery-card {
   position: absolute;
   width: clamp(220px, 18vw, 340px);
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 22px;
+  transform-origin: center center;
+}
+
+.smart-gallery-ghost-card {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(114, 181, 164, 0.08), rgba(140, 115, 80, 0.06));
+  box-shadow:
+    0 24px 72px rgba(15, 12, 10, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.smart-gallery-card {
   border: 1px solid rgba(255, 255, 255, 0.38);
   box-shadow: 0 28px 80px rgba(15, 12, 10, 0.26);
   background: rgba(255, 255, 255, 0.12);
-  transform-origin: center center;
   backdrop-filter: blur(10px);
-  transition: box-shadow 180ms ease, transform 180ms ease;
+  transition: box-shadow 180ms ease, transform 180ms ease, opacity 260ms ease;
 }
 
 .smart-gallery-stack:hover .smart-gallery-card {
