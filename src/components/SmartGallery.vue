@@ -145,12 +145,16 @@ const loadedImages = ref([]);
 const isGalleryReady = ref(false);
 const isGhostVisible = ref(true);
 const isModalOpen = ref(false);
+const isClosingModal = ref(false);
 const modalImageIndex = ref(0);
 const animatedPreview = ref(null);
 const modalImageVisible = ref(false);
 const modalDialog = ref(null);
+const modalImageWrap = ref(null);
 const cardElements = new Map();
 const loadedImageSet = new Set();
+const modalOpenDurationMs = 720;
+const modalCloseDurationMs = 520;
 let intervalId = 0;
 let previewTimeoutId = 0;
 let ghostTimeoutId = 0;
@@ -173,6 +177,7 @@ const cards = computed(() => {
 });
 
 const currentModalImage = computed(() => loadedImages.value[modalImageIndex.value] || "");
+const shouldGhostRightSlot = computed(() => isModalOpen.value || isClosingModal.value);
 
 onMounted(() => {
   void initializeGallery();
@@ -291,6 +296,13 @@ function setCardRef(imageKey, element) {
   cardElements.delete(imageKey);
 }
 
+function syncGalleryToModal() {
+  if (!loadedImages.value.length) return;
+
+  currentIndex.value =
+    (modalImageIndex.value - (visibleCardCount - 1) + loadedImages.value.length) % loadedImages.value.length;
+}
+
 function openModalFromGallery() {
   if (!isGalleryReady.value || !loadedImages.value.length) return;
 
@@ -300,6 +312,7 @@ function openModalFromGallery() {
   const sourceElement = cardElements.get(rightmostCard.imageKey);
   modalImageIndex.value = (currentIndex.value + cards.value.length - 1) % loadedImages.value.length;
   isModalOpen.value = true;
+  isClosingModal.value = false;
   modalImageVisible.value = false;
   stopLoop();
 
@@ -312,6 +325,7 @@ function openModalFromGallery() {
   }
 
   const sourceRect = sourceElement.getBoundingClientRect();
+  const sourceTransform = getComputedStyle(sourceElement).transform;
   const targetWidth = Math.min(window.innerWidth * 0.72, 960);
   const targetHeight = targetWidth * (9 / 16);
   const targetLeft = (window.innerWidth - targetWidth) / 2;
@@ -323,13 +337,15 @@ function openModalFromGallery() {
       top: `${sourceRect.top}px`,
       left: `${sourceRect.left}px`,
       width: `${sourceRect.width}px`,
-      height: `${sourceRect.height}px`
+      height: `${sourceRect.height}px`,
+      transform: sourceTransform === "none" ? "translateZ(0)" : sourceTransform
     },
     end: {
       top: `${targetTop}px`,
       left: `${targetLeft}px`,
       width: `${targetWidth}px`,
-      height: `${targetHeight}px`
+      height: `${targetHeight}px`,
+      transform: "translateZ(0) rotateY(0deg) rotateZ(0deg) scale(1)"
     }
   };
 
@@ -344,14 +360,66 @@ function openModalFromGallery() {
 
   clearPreviewTimeout();
   previewTimeoutId = window.setTimeout(() => {
-    animatedPreview.value = null;
     modalImageVisible.value = true;
-    modalDialog.value?.focus();
-  }, 460);
+    nextTick(() => {
+      modalDialog.value?.focus();
+      previewTimeoutId = 0;
+    });
+  }, modalOpenDurationMs);
 }
 
 function closeModal() {
   clearPreviewTimeout();
+  isClosingModal.value = true;
+
+  const sourceRect = modalImageWrap.value instanceof HTMLElement ? modalImageWrap.value.getBoundingClientRect() : null;
+  const targetCard = cards.value[cards.value.length - 1];
+  const targetElement = targetCard ? cardElements.get(targetCard.imageKey) : null;
+  const targetRect = targetElement instanceof HTMLElement ? targetElement.getBoundingClientRect() : null;
+  const targetTransform = targetElement instanceof HTMLElement ? getComputedStyle(targetElement).transform : "none";
+
+  modalImageVisible.value = false;
+
+  if (!sourceRect || !targetRect) {
+    finalizeModalClose();
+    return;
+  }
+
+  animatedPreview.value = {
+    src: currentModalImage.value,
+    start: {
+      top: `${sourceRect.top}px`,
+      left: `${sourceRect.left}px`,
+      width: `${sourceRect.width}px`,
+      height: `${sourceRect.height}px`,
+      transform: "translateZ(0) rotateY(0deg) rotateZ(0deg) scale(1)"
+    },
+    end: {
+      top: `${targetRect.top}px`,
+      left: `${targetRect.left}px`,
+      width: `${targetRect.width}px`,
+      height: `${targetRect.height}px`,
+      transform: targetTransform === "none" ? "translateZ(0)" : targetTransform
+    }
+  };
+
+  requestAnimationFrame(() => {
+    if (animatedPreview.value) {
+      animatedPreview.value = {
+        ...animatedPreview.value,
+        active: true
+      };
+    }
+  });
+
+  previewTimeoutId = window.setTimeout(() => {
+    finalizeModalClose();
+  }, modalCloseDurationMs);
+}
+
+function finalizeModalClose() {
+  clearPreviewTimeout();
+  isClosingModal.value = false;
   isModalOpen.value = false;
   modalImageVisible.value = false;
   animatedPreview.value = null;
@@ -360,12 +428,20 @@ function closeModal() {
 
 function showNextImage() {
   if (!loadedImages.value.length) return;
+  if (animatedPreview.value) {
+    animatedPreview.value = null;
+  }
   modalImageIndex.value = (modalImageIndex.value + 1) % loadedImages.value.length;
+  syncGalleryToModal();
 }
 
 function showPreviousImage() {
   if (!loadedImages.value.length) return;
+  if (animatedPreview.value) {
+    animatedPreview.value = null;
+  }
   modalImageIndex.value = (modalImageIndex.value - 1 + loadedImages.value.length) % loadedImages.value.length;
+  syncGalleryToModal();
 }
 
 function handleModalKeydown(event) {
@@ -407,7 +483,7 @@ function handleModalKeydown(event) {
               v-show="isGalleryReady"
               :key="card.imageKey"
               class="smart-gallery-card"
-              :class="card.className"
+              :class="[card.className, shouldGhostRightSlot && card.className === 'slot-4' && 'is-source-hidden']"
               :ref="(element) => setCardRef(card.imageKey, element)"
             >
               <img :src="card.src" :alt="card.alt" loading="lazy" />
@@ -420,6 +496,7 @@ function handleModalKeydown(event) {
     <div
       v-if="isModalOpen"
       class="smart-gallery-modal"
+      :class="{ 'is-closing': isClosingModal }"
       @keydown="handleModalKeydown"
     >
       <div class="smart-gallery-modal__backdrop" @click="closeModal"></div>
@@ -443,12 +520,12 @@ function handleModalKeydown(event) {
         aria-label="Galería de murales Rover Smart"
         @click.self="closeModal"
       >
-        <div class="smart-gallery-modal__frame" :class="{ 'is-visible': modalImageVisible }">
+        <div class="smart-gallery-modal__frame" :class="{ 'is-visible': !isClosingModal }">
           <button class="smart-gallery-modal__close" type="button" aria-label="Cerrar" @click="closeModal">×</button>
           <button class="smart-gallery-modal__nav is-prev" type="button" aria-label="Imagen anterior" @click="showPreviousImage">
             <span aria-hidden="true">‹</span>
           </button>
-          <div class="smart-gallery-modal__image-wrap">
+          <div ref="modalImageWrap" class="smart-gallery-modal__image-wrap" :class="{ 'is-visible': modalImageVisible && !isClosingModal }">
             <img :src="currentModalImage" alt="Mural ampliado" />
           </div>
           <button class="smart-gallery-modal__nav is-next" type="button" aria-label="Imagen siguiente" @click="showNextImage">
@@ -538,6 +615,20 @@ function handleModalKeydown(event) {
   transition: box-shadow 180ms ease, transform 180ms ease, opacity 260ms ease;
 }
 
+.smart-gallery-card.is-source-hidden {
+  border-color: rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(114, 181, 164, 0.08), rgba(140, 115, 80, 0.06));
+  box-shadow:
+    0 24px 72px rgba(15, 12, 10, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.smart-gallery-card.is-source-hidden img {
+  opacity: 0;
+}
+
 .smart-gallery-stack:hover .smart-gallery-card {
   box-shadow: 0 32px 92px rgba(15, 12, 10, 0.34);
 }
@@ -612,6 +703,7 @@ function handleModalKeydown(event) {
   inset: 0;
   background: rgba(5, 5, 5, 0.82);
   backdrop-filter: blur(12px);
+  transition: opacity 180ms ease;
 }
 
 .smart-gallery-modal__lighthouse {
@@ -621,6 +713,7 @@ function handleModalKeydown(event) {
     radial-gradient(circle at center, rgba(255, 248, 229, 0.26), rgba(255, 248, 229, 0.08) 18%, rgba(5, 5, 5, 0) 38%),
     radial-gradient(circle at center, rgba(255, 255, 255, 0.12), rgba(5, 5, 5, 0) 52%);
   pointer-events: none;
+  transition: opacity 180ms ease;
 }
 
 .smart-gallery-modal__dialog {
@@ -630,6 +723,7 @@ function handleModalKeydown(event) {
   height: 100%;
   display: grid;
   place-items: center;
+  transition: opacity 180ms ease;
 }
 
 .smart-gallery-modal__dialog:focus {
@@ -644,16 +738,22 @@ function handleModalKeydown(event) {
   box-shadow: 0 36px 120px rgba(0, 0, 0, 0.42);
   object-fit: cover;
   transition:
-    top 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    left 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    height 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 460ms ease;
+    top 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 720ms ease;
 }
 
-.smart-gallery-modal__preview.is-active {
-  transform: translateZ(0) scale(1);
+.smart-gallery-modal.is-closing .smart-gallery-modal__preview {
+  transition:
+    top 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms ease;
 }
 
 .smart-gallery-modal__frame {
@@ -661,7 +761,7 @@ function handleModalKeydown(event) {
   width: min(72vw, 960px);
   opacity: 0;
   transform: translateY(12px) scale(0.98);
-  transition: opacity 240ms ease, transform 320ms ease;
+  transition: opacity 180ms ease, transform 220ms ease;
 }
 
 .smart-gallery-modal__frame.is-visible {
@@ -674,6 +774,12 @@ function handleModalKeydown(event) {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.26);
   box-shadow: 0 30px 110px rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.smart-gallery-modal__image-wrap.is-visible {
+  opacity: 1;
 }
 
 .smart-gallery-modal__image-wrap img {
@@ -729,6 +835,12 @@ function handleModalKeydown(event) {
 .smart-gallery-modal__nav.is-next {
   right: -118px;
   transform: translateY(-50%) rotateY(-16deg);
+}
+
+.smart-gallery-modal.is-closing .smart-gallery-modal__backdrop,
+.smart-gallery-modal.is-closing .smart-gallery-modal__lighthouse,
+.smart-gallery-modal.is-closing .smart-gallery-modal__dialog {
+  opacity: 0;
 }
 
 @media (max-width: 960px) {
