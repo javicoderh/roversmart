@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SmartGallery from "../components/SmartGallery.vue";
 import "../styles/global.css";
 import fox2dImage from "../assets/fox2d.png";
 import foxImage from "../assets/fox.png";
@@ -34,6 +35,7 @@ const quoteSteps = [
   title="Cotiza tu mural"
   description="Cotizador visual para proyectos de muralismo, branding y arte mural."
 >
+  <SmartGallery client:load />
   <header class="site-header-shell">
     <div class="site-header page-shell page-shell--header">
       <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" data-mobile-menu-toggle>
@@ -193,11 +195,11 @@ const quoteSteps = [
                     <div class="field-grid">
                       <label>
                         Alto [mts]
-                        <input type="number" name="alto" placeholder="2.8 mts" min="0" step="0.1" data-dimension="alto" />
+                        <input type="number" name="alto" placeholder="2.8 mts" min="0" step="0.1" data-dimension="alto" data-validate-field="alto" />
                       </label>
                       <label>
                         Ancho [mts]
-                        <input type="number" name="ancho" placeholder="6.5 mts" min="0" step="0.1" data-dimension="ancho" />
+                        <input type="number" name="ancho" placeholder="6.5 mts" min="0" step="0.1" data-dimension="ancho" data-validate-field="ancho" />
                       </label>
                       <label class="full">
                         Fotografías muro/soporte [máx. 4]
@@ -210,17 +212,18 @@ const quoteSteps = [
                             accept="image/*"
                             multiple
                             data-max-files="4"
+                            data-validate-field="foto_frontal"
                           />
                         </span>
                         <small class="field-help">Hasta 4 imágenes de {maxImageSizeMb} MB cada una.</small>
                       </label>
                       <label>
                         Ubicación
-                        <input type="text" name="ubicacion" placeholder="país, ciudad, dirección" />
+                        <input type="text" name="ubicacion" placeholder="país, ciudad, dirección" data-validate-field="ubicacion" />
                       </label>
                       <label>
                         Estado muro/ soporte
-                        <select name="estado">
+                        <select name="estado" data-validate-field="estado">
                           <option value="">Seleccionar</option>
                           <option>Listo para pintar</option>
                           <option>Requiere mantención</option>
@@ -257,7 +260,7 @@ const quoteSteps = [
                           <label class="mural-type-option">
                             <img class="mural-type-option__image" src={fox2dImage.src} alt="" aria-hidden="true" />
                             <span class="mural-type-option__choice">
-                              <input type="checkbox" name="tipo_mural" value="Minimal" />
+                              <input type="checkbox" name="tipo_mural" value="Minimal" data-validate-field="tipo_mural" />
                               <span class="circle-option__control" aria-hidden="true"></span>
                             </span>
                             <span class="mural-type-option__label">Minimal</span>
@@ -265,7 +268,7 @@ const quoteSteps = [
                           <label class="mural-type-option">
                             <img class="mural-type-option__image" src={foxMidImage.src} alt="" aria-hidden="true" />
                             <span class="mural-type-option__choice">
-                              <input type="checkbox" name="tipo_mural" value="Intermedio" />
+                              <input type="checkbox" name="tipo_mural" value="Intermedio" data-validate-field="tipo_mural" />
                               <span class="circle-option__control" aria-hidden="true"></span>
                             </span>
                             <span class="mural-type-option__label">Intermedio</span>
@@ -273,7 +276,7 @@ const quoteSteps = [
                           <label class="mural-type-option">
                             <img class="mural-type-option__image" src={foxImage.src} alt="" aria-hidden="true" />
                             <span class="mural-type-option__choice">
-                              <input type="checkbox" name="tipo_mural" value="Detallado" />
+                              <input type="checkbox" name="tipo_mural" value="Detallado" data-validate-field="tipo_mural" />
                               <span class="circle-option__control" aria-hidden="true"></span>
                             </span>
                             <span class="mural-type-option__label">Detallado</span>
@@ -282,7 +285,7 @@ const quoteSteps = [
                       </label>
                       <label>
                         Contexto del mural
-                        <select name="uso">
+                        <select name="uso" data-validate-field="uso">
                           <option value="">Seleccionar</option>
                           <option>Decorativo personal</option>
                           <option>Negocio / marketing</option>
@@ -292,7 +295,7 @@ const quoteSteps = [
                       </label>
                       <label class="full">
                         Concepto creativo
-                        <textarea name="idea" rows="5" placeholder="Desarrolla la idea de tu mural..."></textarea>
+                        <textarea name="idea" rows="5" placeholder="Desarrolla la idea de tu mural..." data-validate-field="idea"></textarea>
                       </label>
                       <label class="full">
                         Referencias (opcional)
@@ -319,15 +322,15 @@ const quoteSteps = [
                     <div class="field-grid">
                       <label>
                         Nombre
-                        <input type="text" name="nombre" placeholder="tu nombre / nombre empresa / marca" />
+                        <input type="text" name="nombre" placeholder="tu nombre / nombre empresa / marca" data-validate-field="nombre" />
                       </label>
                       <label>
                         E-mail
-                        <input type="email" name="email" placeholder="nombre@correo.com" required />
+                        <input type="email" name="email" placeholder="nombre@correo.com" required data-validate-field="email" />
                       </label>
                       <label>
                         Teléfono
-                        <input type="tel" name="telefono" placeholder="+56 9 ..." />
+                        <input type="tel" name="telefono" placeholder="+56 9 ..." data-validate-field="telefono" />
                       </label>
                       <label class="full">
                         Descripción del cliente
@@ -335,6 +338,7 @@ const quoteSteps = [
                           name="tipo_cliente"
                           rows="4"
                           placeholder="describe a la persona, institución o marca que solicita el mural."
+                          data-validate-field="tipo_cliente"
                         ></textarea>
                       </label>
                     </div>
@@ -365,6 +369,27 @@ const quoteSteps = [
           </div>
         </div>
       </form>
+
+      <div class="validation-modal" data-validation-modal hidden aria-hidden="true">
+        <div class="validation-modal__backdrop" data-validation-close></div>
+        <div
+          class="validation-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="validation-modal-title"
+          aria-describedby="validation-modal-description"
+          tabindex="-1"
+          data-validation-dialog
+        >
+          <button class="validation-modal__close" type="button" aria-label="Cerrar modal de validación" data-validation-close>
+            Cerrar
+          </button>
+          <p class="validation-modal__eyebrow">Revisión pendiente</p>
+          <h3 id="validation-modal-title">Hay campos que corregir</h3>
+          <p id="validation-modal-description">Revisa los errores detectados y vuelve al paso indicado sin perder el progreso.</p>
+          <ul class="validation-modal__list" data-validation-errors></ul>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -383,11 +408,72 @@ const quoteSteps = [
     const imageInputs = Array.from(document.querySelectorAll('input[type="file"]'));
     const mobileMenuToggle = document.querySelector("[data-mobile-menu-toggle]");
     const mobileNav = document.querySelector("[data-mobile-nav]");
+    const validationModal = document.querySelector("[data-validation-modal]");
+    const validationDialog = document.querySelector("[data-validation-dialog]");
+    const validationErrorsList = document.querySelector("[data-validation-errors]");
+    const validationCloseButtons = Array.from(document.querySelectorAll("[data-validation-close]"));
+    const fieldsByName = {
+      alto: form?.elements.namedItem("alto"),
+      ancho: form?.elements.namedItem("ancho"),
+      foto_frontal: form?.elements.namedItem("foto_frontal"),
+      ubicacion: form?.elements.namedItem("ubicacion"),
+      estado: form?.elements.namedItem("estado"),
+      tipo_mural: Array.from(form?.querySelectorAll('input[name="tipo_mural"]') || []),
+      uso: form?.elements.namedItem("uso"),
+      idea: form?.elements.namedItem("idea"),
+      nombre: form?.elements.namedItem("nombre"),
+      email: form?.elements.namedItem("email"),
+      telefono: form?.elements.namedItem("telefono"),
+      tipo_cliente: form?.elements.namedItem("tipo_cliente")
+    };
     const maxImageSizeBytes = 5 * 1024 * 1024;
     const maxImageWidth = 2560;
     const maxImageHeight = 2560;
+    const regexRules = {
+      measurement: /^(?:0\.[1-9]\d?|[1-9]\d{0,2}(?:[.,]\d{1,2})?)$/,
+      location: /^(?=.{8,160}$)(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s,.'/#-]{7,159}$/,
+      idea: /^(?=.{20,800}$)(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ0-9¿?¡!.,:;'"%/()#&+\-\s\n]+$/,
+      name: /^(?=.{3,100}$)(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ0-9&.' -]+$/,
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+      phone: /^\+?[0-9][0-9\s()-]{7,19}$/,
+      clientDescription: /^(?=.{12,400}$)(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ0-9¿?¡!.,:;'"%/()#&+\-\s\n]+$/
+    };
+    const stepFieldOrder = [
+      [],
+      ["alto", "ancho", "foto_frontal", "ubicacion", "estado"],
+      ["tipo_mural", "uso", "idea"],
+      ["nombre", "email", "telefono", "tipo_cliente"]
+    ];
+    const fieldStepMap = stepFieldOrder.reduce((accumulator, fieldNames, stepIndex) => {
+      fieldNames.forEach((fieldName) => {
+        accumulator[fieldName] = stepIndex;
+      });
+      return accumulator;
+    }, {});
+    const fieldLabels = {
+      alto: "Alto",
+      ancho: "Ancho",
+      foto_frontal: "Fotografías del muro",
+      ubicacion: "Ubicación",
+      estado: "Estado del muro",
+      tipo_mural: "Nivel de complejidad",
+      uso: "Contexto del mural",
+      idea: "Concepto creativo",
+      nombre: "Nombre",
+      email: "E-mail",
+      telefono: "Teléfono",
+      tipo_cliente: "Descripción del cliente"
+    };
+    const fieldInteractionState = Object.fromEntries(
+      Object.keys(fieldsByName).map((fieldName) => [
+        fieldName,
+        { focusedOnce: false, touched: false, dialogOpen: false }
+      ])
+    );
+    const fieldErrorTimeouts = {};
     let currentStep = 0;
     let flowStarted = false;
+    let lastFocusedElement = null;
 
     const setStep = (targetStep) => {
       currentStep = Math.min(Math.max(targetStep, 0), stepPanels.length - 1);
@@ -425,6 +511,318 @@ const quoteSteps = [
 
       const filesCount = referencesInput.files?.length || 0;
       referencesCount.textContent = `${filesCount} seleccionada${filesCount === 1 ? "" : "s"}`;
+    };
+
+    const normalizeText = (value) => value.trim().replace(/\s+/g, " ");
+
+    const getFieldElements = (fieldName) => {
+      const field = fieldsByName[fieldName];
+      if (!field) return [];
+      return Array.isArray(field) ? field : [field];
+    };
+
+    const getFieldContainer = (fieldName, element) => {
+      if (fieldName === "tipo_mural") {
+        return element?.closest(".mural-type-grid");
+      }
+
+      if (fieldName === "foto_frontal") {
+        return element?.closest("label");
+      }
+
+      return element?.closest("label");
+    };
+
+    const getErrorNode = (fieldName) => {
+      const [element] = getFieldElements(fieldName);
+      const container = getFieldContainer(fieldName, element);
+      if (!(container instanceof HTMLElement)) return null;
+
+      let errorNode = container.parentElement?.querySelector(`[data-field-error="${fieldName}"]`);
+
+      if (!(errorNode instanceof HTMLElement)) {
+        errorNode = document.createElement("p");
+        errorNode.className = "field-error";
+        errorNode.dataset.fieldError = fieldName;
+        errorNode.hidden = true;
+        errorNode.setAttribute("aria-live", "polite");
+        container.insertAdjacentElement("afterend", errorNode);
+      }
+
+      return errorNode;
+    };
+
+    const setFieldError = (fieldName, message) => {
+      const errorNode = getErrorNode(fieldName);
+      if (!(errorNode instanceof HTMLElement)) return;
+
+      if (fieldErrorTimeouts[fieldName]) {
+        clearTimeout(fieldErrorTimeouts[fieldName]);
+        delete fieldErrorTimeouts[fieldName];
+      }
+
+      if (!message) {
+        errorNode.classList.remove("is-visible");
+        setTimeout(() => {
+          if (!errorNode.classList.contains("is-visible")) {
+            errorNode.textContent = "";
+            errorNode.hidden = true;
+          }
+        }, 220);
+        return;
+      }
+
+      errorNode.textContent = message;
+      errorNode.hidden = false;
+      requestAnimationFrame(() => {
+        errorNode.classList.add("is-visible");
+      });
+
+      if (message) {
+        fieldErrorTimeouts[fieldName] = setTimeout(() => {
+          errorNode.classList.remove("is-visible");
+          setTimeout(() => {
+            if (!errorNode.classList.contains("is-visible")) {
+              errorNode.textContent = "";
+              errorNode.hidden = true;
+            }
+          }, 220);
+          delete fieldErrorTimeouts[fieldName];
+        }, 5000);
+      }
+    };
+
+    const closeValidationModal = () => {
+      if (!(validationModal instanceof HTMLElement)) return;
+      validationModal.hidden = true;
+      validationModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      if (lastFocusedElement instanceof HTMLElement) {
+        lastFocusedElement.focus();
+      }
+    };
+
+    const goToFieldError = (fieldName) => {
+      const targetStep = fieldStepMap[fieldName];
+      const [targetElement] = getFieldElements(fieldName);
+
+      closeValidationModal();
+      revealForm();
+
+      if (typeof targetStep === "number") {
+        setStep(targetStep);
+      }
+
+      requestAnimationFrame(() => {
+        if (targetElement instanceof HTMLElement) {
+          targetElement.focus();
+          targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    };
+
+    const openValidationModal = (errors) => {
+      if (
+        !(validationModal instanceof HTMLElement) ||
+        !(validationDialog instanceof HTMLElement) ||
+        !(validationErrorsList instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      validationErrorsList.innerHTML = "";
+
+      errors.forEach(({ fieldName, error, stepIndex }) => {
+        const listItem = document.createElement("li");
+        const action = document.createElement("button");
+        const stepLabel = quoteSteps[stepIndex]?.index || `0${stepIndex + 1}`;
+        const fieldLabel = fieldLabels[fieldName] || fieldName;
+
+        action.type = "button";
+        action.className = "validation-modal__error-link";
+        action.innerHTML = `<strong>Paso ${stepLabel} · ${fieldLabel}</strong><span>${error}</span>`;
+        action.addEventListener("click", () => {
+          goToFieldError(fieldName);
+        });
+
+        listItem.appendChild(action);
+        validationErrorsList.appendChild(listItem);
+      });
+
+      validationModal.hidden = false;
+      validationModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      requestAnimationFrame(() => validationDialog.focus());
+    };
+
+    const toggleInvalidState = (fieldName, isInvalid) => {
+      const elements = getFieldElements(fieldName);
+
+      elements.forEach((element) => {
+        if (!(element instanceof HTMLElement)) return;
+
+        element.classList.toggle("is-invalid", isInvalid);
+        const container = getFieldContainer(fieldName, element);
+        container?.classList.toggle("is-invalid", isInvalid);
+        element.setAttribute("aria-invalid", isInvalid ? "true" : "false");
+      });
+    };
+
+    const validateField = (fieldName, options = {}) => {
+      const { forceShow = false } = options;
+      const error = getValidationError(fieldName);
+      const shouldShowError = forceShow || fieldInteractionState[fieldName]?.touched;
+
+      toggleInvalidState(fieldName, shouldShowError && Boolean(error));
+      setFieldError(fieldName, shouldShowError ? error : "");
+      return error;
+    };
+
+    const validateImageFiles = (input, maxFiles) => {
+      const files = Array.from(input.files || []);
+
+      if (!files.length) {
+        return "Adjunta al menos una fotografía del muro o soporte.";
+      }
+
+      if (maxFiles > 0 && files.length > maxFiles) {
+        return `Adjunta un máximo de ${maxFiles} imágenes.`;
+      }
+
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          return "Solo se permiten archivos de imagen.";
+        }
+
+        if (file.size > maxImageSizeBytes * 2) {
+          return "Cada imagen debe pesar menos de 10 MB antes de optimizarse.";
+        }
+      }
+
+      return "";
+    };
+
+    const getValidationError = (fieldName) => {
+      const [element] = getFieldElements(fieldName);
+
+      switch (fieldName) {
+        case "alto":
+        case "ancho": {
+          const value = normalizeText(element?.value || "").replace(",", ".");
+          if (!value) return `Completa ${fieldName === "alto" ? "el alto" : "el ancho"} del muro.`;
+          if (!regexRules.measurement.test(value)) {
+            return "Usa medidas en metros con hasta 2 decimales, por ejemplo 2.8 o 12.50.";
+          }
+          return "";
+        }
+        case "foto_frontal": {
+          if (!(element instanceof HTMLInputElement)) return "No se pudo leer el adjunto.";
+          return validateImageFiles(element, Number(element.dataset.maxFiles || "0"));
+        }
+        case "ubicacion": {
+          const value = normalizeText(element?.value || "");
+          if (!value) return "Indica la ubicación del proyecto.";
+          if (!regexRules.location.test(value)) {
+            return "Escribe país, ciudad y una referencia útil de dirección.";
+          }
+          return "";
+        }
+        case "estado":
+        case "uso": {
+          if (!normalizeText(element?.value || "")) {
+            return `Selecciona ${fieldName === "estado" ? "el estado del muro" : "el contexto del mural"}.`;
+          }
+          return "";
+        }
+        case "tipo_mural": {
+          const isChecked = getFieldElements(fieldName).some(
+            (input) => input instanceof HTMLInputElement && input.checked
+          );
+          return isChecked ? "" : "Selecciona al menos un nivel de complejidad.";
+        }
+        case "idea": {
+          const value = (element?.value || "").trim();
+          if (!value) return "Describe el concepto creativo del mural.";
+          if (!regexRules.idea.test(value)) {
+            return "El concepto debe tener al menos 20 caracteres y detallar la idea con texto válido.";
+          }
+          return "";
+        }
+        case "nombre": {
+          const value = normalizeText(element?.value || "");
+          if (!value) return "Indica el nombre de contacto o de la marca.";
+          if (!regexRules.name.test(value)) {
+            return "El nombre debe tener entre 3 y 100 caracteres válidos.";
+          }
+          return "";
+        }
+        case "email": {
+          const value = normalizeText(element?.value || "");
+          if (!value) return "Indica un correo de contacto.";
+          if (!regexRules.email.test(value)) {
+            return "El correo no tiene un formato válido.";
+          }
+          return "";
+        }
+        case "telefono": {
+          const value = normalizeText(element?.value || "");
+          if (!value) return "Indica un teléfono de contacto.";
+          if (!regexRules.phone.test(value)) {
+            return "El teléfono debe incluir entre 8 y 20 caracteres numéricos válidos.";
+          }
+          return "";
+        }
+        case "tipo_cliente": {
+          const value = (element?.value || "").trim();
+          if (!value) return "Describe el tipo de cliente que solicita el mural.";
+          if (!regexRules.clientDescription.test(value)) {
+            return "La descripción del cliente debe tener al menos 12 caracteres útiles.";
+          }
+          return "";
+        }
+        default:
+          return "";
+      }
+    };
+
+    const focusFirstInvalidField = (fieldNames) => {
+      for (const fieldName of fieldNames) {
+        const [element] = getFieldElements(fieldName);
+        if (element instanceof HTMLElement) {
+          element.focus();
+          break;
+        }
+      }
+    };
+
+    const validateFields = (fieldNames, options = {}) => {
+      const errors = [];
+
+      fieldNames.forEach((fieldName) => {
+        if (options.forceShow && fieldInteractionState[fieldName]) {
+          fieldInteractionState[fieldName].touched = true;
+        }
+
+        const error = validateField(fieldName, options);
+
+        if (error) {
+          errors.push({ fieldName, error, stepIndex: fieldStepMap[fieldName] ?? currentStep });
+        }
+      });
+
+      return errors;
+    };
+
+    const validateStep = (stepIndex, options = {}) => {
+      const fieldNames = stepFieldOrder[stepIndex] || [];
+      return validateFields(fieldNames, options);
+    };
+
+    const clearStatusToDefault = () => {
+      if (submitStatus) {
+        submitStatus.textContent = "Respuesta estimada: 3-5 días.";
+      }
     };
 
     const fileToImage = (file) =>
@@ -615,6 +1013,17 @@ const quoteSteps = [
     nextButtons.forEach((button) => {
       button.addEventListener("click", () => {
         revealForm();
+        const errors = validateStep(currentStep, { forceShow: true });
+
+        if (errors.length) {
+          if (submitStatus) {
+            submitStatus.textContent = errors[0].error;
+          }
+          openValidationModal(errors);
+          return;
+        }
+
+        clearStatusToDefault();
         setStep(currentStep + 1);
       });
     });
@@ -673,6 +1082,69 @@ const quoteSteps = [
       }
 
       syncReferencesCount();
+    });
+
+    Object.entries(fieldsByName).forEach(([fieldName, field]) => {
+      const elements = Array.isArray(field) ? field : field ? [field] : [];
+
+      elements.forEach((element) => {
+        if (!(element instanceof HTMLElement)) return;
+
+        const changeEventName =
+          element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "file")
+            ? "change"
+            : "input";
+
+        element.addEventListener("focus", () => {
+          if (fieldInteractionState[fieldName]) {
+            fieldInteractionState[fieldName].focusedOnce = true;
+          }
+        });
+
+        if (element instanceof HTMLInputElement && element.type === "file") {
+          element.addEventListener("click", () => {
+            if (fieldInteractionState[fieldName]) {
+              fieldInteractionState[fieldName].dialogOpen = true;
+            }
+          });
+        }
+
+        element.addEventListener(changeEventName, () => {
+          if (fieldInteractionState[fieldName]) {
+            fieldInteractionState[fieldName].dialogOpen = false;
+
+            if (element instanceof HTMLInputElement && element.type === "file") {
+              fieldInteractionState[fieldName].touched = true;
+            }
+          }
+
+          const error = validateField(fieldName);
+          if (!error) {
+            clearStatusToDefault();
+          }
+        });
+
+        element.addEventListener("blur", () => {
+          if (
+            element instanceof HTMLInputElement &&
+            element.type === "file" &&
+            fieldInteractionState[fieldName]?.dialogOpen
+          ) {
+            fieldInteractionState[fieldName].dialogOpen = false;
+            return;
+          }
+
+          if (fieldInteractionState[fieldName]?.focusedOnce) {
+            fieldInteractionState[fieldName].touched = true;
+          }
+
+          const error = validateField(fieldName);
+
+          if (!error) {
+            clearStatusToDefault();
+          }
+        });
+      });
     });
 
     imageInputs
@@ -738,6 +1210,18 @@ const quoteSteps = [
       });
     });
 
+    validationCloseButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        closeValidationModal();
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && validationModal instanceof HTMLElement && !validationModal.hidden) {
+        closeValidationModal();
+      }
+    });
+
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
 
@@ -756,6 +1240,25 @@ const quoteSteps = [
 
       const formData = new FormData(form);
       const rawPayload = collectValues(formData);
+      const allStepErrors = stepFieldOrder.flatMap((_, index) => validateStep(index, { forceShow: true }));
+
+      if (allStepErrors.length) {
+        const firstInvalidStep = stepFieldOrder.findIndex((fieldNames) =>
+          fieldNames.some((fieldName) => allStepErrors.some((error) => error.fieldName === fieldName))
+        );
+
+        if (submitStatus) {
+          submitStatus.textContent = allStepErrors[0].error;
+        }
+
+        openValidationModal(allStepErrors);
+
+        if (firstInvalidStep >= 0) {
+          revealForm();
+          setStep(firstInvalidStep);
+        }
+        return;
+      }
 
       try {
         if (submitButton instanceof HTMLButtonElement) {
