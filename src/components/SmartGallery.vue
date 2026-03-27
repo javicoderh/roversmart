@@ -154,6 +154,7 @@ const loadedImageSet = new Set();
 let intervalId = 0;
 let previewTimeoutId = 0;
 let ghostTimeoutId = 0;
+let revealTimeoutId = 0;
 
 const cards = computed(() => {
   const pool = loadedImages.value.length ? loadedImages.value : muralImages.slice(0, visibleCardCount);
@@ -181,6 +182,7 @@ onBeforeUnmount(() => {
   stopLoop();
   clearPreviewTimeout();
   clearGhostTimeout();
+  clearRevealTimeout();
 });
 
 function startLoop() {
@@ -214,16 +216,26 @@ function clearGhostTimeout() {
   }
 }
 
-function revealGallery() {
-  if (isGalleryReady.value) return;
+function clearRevealTimeout() {
+  if (revealTimeoutId) {
+    window.clearTimeout(revealTimeoutId);
+    revealTimeoutId = 0;
+  }
+}
 
-  isGalleryReady.value = true;
-  startLoop();
-  clearGhostTimeout();
-  ghostTimeoutId = window.setTimeout(() => {
-    isGhostVisible.value = false;
-    ghostTimeoutId = 0;
-  }, 260);
+function revealGallery() {
+  if (isGalleryReady.value || revealTimeoutId) return;
+
+  revealTimeoutId = window.setTimeout(() => {
+    isGalleryReady.value = true;
+    startLoop();
+    clearGhostTimeout();
+    ghostTimeoutId = window.setTimeout(() => {
+      isGhostVisible.value = false;
+      ghostTimeoutId = 0;
+    }, 260);
+    revealTimeoutId = 0;
+  }, 800);
 }
 
 function preloadImage(src) {
