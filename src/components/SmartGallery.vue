@@ -701,7 +701,7 @@ function handleModalKeydown(event) {
 .smart-gallery-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(5, 5, 5, 0.82);
+  background: rgba(5, 5, 5, 0.7);
   backdrop-filter: blur(12px);
   transition: opacity 180ms ease;
 }
@@ -710,8 +710,8 @@ function handleModalKeydown(event) {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at center, rgba(255, 248, 229, 0.26), rgba(255, 248, 229, 0.08) 18%, rgba(5, 5, 5, 0) 38%),
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.12), rgba(5, 5, 5, 0) 52%);
+    radial-gradient(circle at center, rgba(255, 248, 229, 0.2), rgba(255, 248, 229, 0.05) 18%, rgba(5, 5, 5, 0) 38%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.08), rgba(5, 5, 5, 0) 52%);
   pointer-events: none;
   transition: opacity 180ms ease;
 }
