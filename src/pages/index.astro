@@ -24,10 +24,10 @@ const roverMenuItems = [
 ];
 
 const quoteSteps = [
-  { index: "01", label: "Proceso", title: "Desglose del proceso", caption: "" },
-  { index: "02", label: "Muro / soporte", title: "Muro / soporte", caption: "Medidas, fotos y ubicación" },
-  { index: "03", label: "Diseño / concepto", title: "Diseño / concepto", caption: "A mayor nivel de complejidad" },
-  { index: "04", label: "Datos / contacto", title: "Datos / contacto", caption: "Datos de contacto." }
+  { index: "01", label: "Muro / soporte", title: "Muro / soporte", caption: "Medidas, fotos y ubicación" },
+  { index: "02", label: "Diseño / concepto", title: "Diseño / concepto", caption: "A mayor nivel de complejidad" },
+  { index: "03", label: "Datos / contacto", title: "Datos / contacto", caption: "Datos de contacto." },
+  { index: "04", label: "Proceso", title: "Desglose del proceso", caption: "" }
 ];
 ---
 
@@ -157,7 +157,7 @@ const quoteSteps = [
                       <p class="section-tag">{step.label}</p>
                       <h2>{step.title}</h2>
                       {
-                        index === 2 ? (
+                        index === 1 ? (
                           <div class="section-caption-flow">
                             <p>{step.caption}:</p>
                             <span>+ tiempo de ejecución</span>
@@ -175,23 +175,6 @@ const quoteSteps = [
                   </div>
 
                   {index === 0 && (
-                    <div class="process-overview">
-                      <ol>
-                        <li>Cliente completa el formulario de cotización.</li>
-                        <li>Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.</li>
-                        <li>De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.</li>
-                        <li>Reunión cliente-artista.</li>
-                        <li>Comienza el proceso de feedback para el diseño.</li>
-                        <li>Aprobado el diseño, cliente debe abonar el 50% restante de este + ítem materiales y logística.</li>
-                        <li>Proceso de compra de materiales / mezcla de colores.</li>
-                        <li>Ejecución del mural.</li>
-                        <li>Entrega del mural.</li>
-                        <li>Pago final [máximo 5 días hábiles desde la entrega].</li>
-                      </ol>
-                    </div>
-                  )}
-
-                  {index === 1 && (
                     <div class="field-grid">
                       <label>
                         Alto [mts]
@@ -252,7 +235,7 @@ const quoteSteps = [
                     </div>
                   )}
 
-                  {index === 2 && (
+                  {index === 1 && (
                     <div class="field-grid">
                       <label class="full">
                         Nivel de complejidad [puedes cotizar más de un nivel]
@@ -318,7 +301,7 @@ const quoteSteps = [
                     </div>
                   )}
 
-                  {index === 3 && (
+                  {index === 2 && (
                     <div class="field-grid">
                       <label>
                         Nombre
@@ -341,6 +324,23 @@ const quoteSteps = [
                           data-validate-field="tipo_cliente"
                         ></textarea>
                       </label>
+                    </div>
+                  )}
+
+                  {index === 3 && (
+                    <div class="process-overview">
+                      <ol>
+                        <li>Cliente completa el formulario de cotización.</li>
+                        <li>Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.</li>
+                        <li>De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.</li>
+                        <li>Reunión cliente-artista.</li>
+                        <li>Comienza el proceso de feedback para el diseño.</li>
+                        <li>Aprobado el diseño, cliente debe abonar el 50% restante de este + ítem materiales y logística.</li>
+                        <li>Proceso de compra de materiales / mezcla de colores.</li>
+                        <li>Ejecución del mural.</li>
+                        <li>Entrega del mural.</li>
+                        <li>Pago final [máximo 5 días hábiles desde la entrega].</li>
+                      </ol>
                     </div>
                   )}
 
@@ -439,10 +439,10 @@ const quoteSteps = [
       clientDescription: /^(?=.{12,400}$)(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ0-9¿?¡!.,:;'"%/()#&+\-\s\n]+$/
     };
     const stepFieldOrder = [
-      [],
       ["alto", "ancho", "foto_frontal", "ubicacion", "estado"],
       ["tipo_mural", "uso", "idea"],
-      ["nombre", "email", "telefono", "tipo_cliente"]
+      ["nombre", "email", "telefono", "tipo_cliente"],
+      []
     ];
     const fieldStepMap = stepFieldOrder.reduce((accumulator, fieldNames, stepIndex) => {
       fieldNames.forEach((fieldName) => {
@@ -951,7 +951,23 @@ const quoteSteps = [
     const yesNoFromValue = (value) => (value ? "Sí" : "No");
 
     const buildSubmissionPayload = (payload) => ({
-      step_01_desgloce_del_proceso: [
+      step_01_muro_soporte_medidas: `Alto: ${payload.alto || "-"} | Ancho: ${payload.ancho || "-"}`,
+      step_01_fotografias_muro_soporte: payload.foto_frontal_urls || "Sin adjuntos",
+      step_01_ubicacion: payload.ubicacion || "-",
+      step_01_estado_muro_soporte: payload.estado || "-",
+      step_01_bodegas_disponibles: yesNoFromValue(payload.bodega_disponible),
+      step_01_estacionamiento_disponible: yesNoFromValue(payload.estacionamiento_disponible),
+      step_01_notas_adicionales: payload.descripcion_muro || "-",
+      step_02_nivel_de_complejidad: toList(payload.tipo_mural).join(", ") || "-",
+      step_02_uso: payload.uso || "-",
+      step_02_concepto_creativo: payload.idea || "-",
+      step_02_referencias: payload.referencias_urls || "Sin adjuntos",
+      step_02_proteccion: toList(payload.proteccion).join(", ") || "-",
+      step_03_nombre: payload.nombre || "-",
+      step_03_email: payload.email || "-",
+      step_03_whatsapp: payload.telefono || "-",
+      step_03_descripcion_del_cliente: payload.tipo_cliente || "-",
+      step_04_desgloce_del_proceso: [
         "1. Cliente completa el formulario de cotización.",
         "2. Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.",
         "3. De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.",
@@ -962,23 +978,7 @@ const quoteSteps = [
         "8. Ejecución del mural.",
         "9. Entrega del mural.",
         "10. Pago final [máximo 5 días hábiles desde la entrega]."
-      ].join("\n"),
-      step_02_muro_soporte_medidas: `Alto: ${payload.alto || "-"} | Ancho: ${payload.ancho || "-"}`,
-      step_02_fotografias_muro_soporte: payload.foto_frontal_urls || "Sin adjuntos",
-      step_02_ubicacion: payload.ubicacion || "-",
-      step_02_estado_muro_soporte: payload.estado || "-",
-      step_02_bodegas_disponibles: yesNoFromValue(payload.bodega_disponible),
-      step_02_estacionamiento_disponible: yesNoFromValue(payload.estacionamiento_disponible),
-      step_02_notas_adicionales: payload.descripcion_muro || "-",
-      step_03_nivel_de_complejidad: toList(payload.tipo_mural).join(", ") || "-",
-      step_03_uso: payload.uso || "-",
-      step_03_concepto_creativo: payload.idea || "-",
-      step_03_referencias: payload.referencias_urls || "Sin adjuntos",
-      step_03_proteccion: toList(payload.proteccion).join(", ") || "-",
-      step_04_nombre: payload.nombre || "-",
-      step_04_email: payload.email || "-",
-      step_04_whatsapp: payload.telefono || "-",
-      step_04_descripcion_del_cliente: payload.tipo_cliente || "-"
+      ].join("\n")
     });
 
     const appendUploadedAssets = async (formElement, payload, cloudName, uploadPreset) => {
