@@ -50,17 +50,17 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             sessionUser ? (
               <>
                 <button class="admin-icon-button" type="button" data-modal-trigger="credentials-modal" title="Cambiar credenciales" aria-label="Cambiar credenciales">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4 4 0 0 0-4 4v2H6.5A2.5 2.5 0 0 0 4 11.5v7A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 17.5 9H16V7a4 4 0 0 0-4-4Zm-2 6V7a2 2 0 1 1 4 0v2"/></svg>
+                  <span class="admin-icon-glyph" aria-hidden="true">🔐</span>
                 </button>
                 <form method="POST" action="/api/admin/logout">
                   <button class="admin-icon-button" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19H10M14 16l4-4-4-4M18 12H9"/></svg>
+                    <span class="admin-icon-glyph" aria-hidden="true">↪</span>
                   </button>
                 </form>
               </>
             ) : (
               <button class="admin-icon-button" type="button" data-modal-trigger="login-modal" title="Entrar" aria-label="Entrar">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19H10M14 16l4-4-4-4M18 12H9"/></svg>
+                <span class="admin-icon-glyph" aria-hidden="true">↩</span>
               </button>
             )
           }
@@ -105,7 +105,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
                 currentView === "read" ? (
                   <form method="POST" action="/api/admin/clear-read-quotes">
                     <button class="admin-icon-button admin-icon-button--danger" type="submit" title="Borrar contestadas" aria-label="Borrar contestadas">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-8 0 .7 11.1A2 2 0 0 0 9.7 20h4.6a2 2 0 0 0 2-1.9L17 7M10 10.5v5M14 10.5v5"/></svg>
+                      <span class="admin-icon-glyph" aria-hidden="true">🗑</span>
                     </button>
                   </form>
                 ) : null
@@ -149,11 +149,11 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
                                 title={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
                                 aria-label={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
                               >
-                                <svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7.5"/></svg>
+                                <span class="admin-icon-glyph" aria-hidden="true">{quote.status === "read" ? "◌" : "✓"}</span>
                               </button>
                             </form>
                             <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
-                              <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                              <span class="admin-icon-glyph" aria-hidden="true">✕</span>
                             </button>
                           </div>
                         </div>
@@ -257,7 +257,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             <h2>Entrar</h2>
           </div>
           <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
-            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+            <span class="admin-icon-glyph" aria-hidden="true">✕</span>
           </button>
         </div>
 
@@ -283,7 +283,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             <h2>Cambiar</h2>
           </div>
           <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
-            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+            <span class="admin-icon-glyph" aria-hidden="true">✕</span>
           </button>
         </div>
 
