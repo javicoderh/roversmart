@@ -8,6 +8,12 @@ import {
 
 export const prerender = false;
 
+function adminRedirect(redirect: APIRoute["redirect"], kind: "error" | "success", message: string) {
+  const params = new URLSearchParams();
+  params.set(kind, message);
+  return redirect(kind === "success" ? `/admin?${params.toString()}` : `/admin?${params.toString()}`);
+}
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
     const formData = await request.formData();
@@ -17,7 +23,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const isValid = await verifyAdminCredentials(username, password);
 
     if (!isValid) {
-      return redirect("/admin?error=Credenciales%20inv%C3%A1lidas");
+      return adminRedirect(redirect, "error", "Credenciales inválidas");
     }
 
     cookies.set(getAdminCookieName(), createSessionCookieValue(username), {
@@ -31,6 +37,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect("/admin");
   } catch (error) {
     console.error("Admin login failed:", error);
-    return redirect("/admin?error=No%20se%20pudo%20validar%20el%20acceso");
+    return adminRedirect(redirect, "error", "No se pudo validar el acceso");
   }
 };

@@ -306,6 +306,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
     const modalTriggers = Array.from(document.querySelectorAll("[data-modal-trigger]"));
     const closeButtons = Array.from(document.querySelectorAll("[data-modal-close]"));
     const defaultModal = document.querySelector('[data-open-default="true"]');
+    const adminForms = Array.from(document.querySelectorAll('form[action^="/api/admin/"]'));
 
     const openModal = (id) => {
       const modal = document.getElementById(id);
@@ -330,6 +331,49 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
       modal.addEventListener("click", (event) => {
         if (event.target === modal) {
           modal.close();
+        }
+      });
+    });
+
+    adminForms.forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const submitter = event.submitter instanceof HTMLButtonElement ? event.submitter : null;
+        const controls = Array.from(form.querySelectorAll("button, input"));
+        const formData = new FormData(form);
+
+        controls.forEach((control) => {
+          control.disabled = true;
+        });
+
+        try {
+          const response = await fetch(form.action, {
+            method: form.method || "POST",
+            body: formData,
+            credentials: "same-origin",
+            redirect: "follow"
+          });
+
+          if (response.redirected && response.url) {
+            window.location.assign(response.url);
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+          }
+
+          window.location.reload();
+        } catch (error) {
+          console.error("Admin form submit failed:", error);
+          controls.forEach((control) => {
+            control.disabled = false;
+          });
+
+          if (submitter) {
+            submitter.focus();
+          }
         }
       });
     });

@@ -7,12 +7,23 @@ import {
 
 export const prerender = false;
 
+function adminRedirect(redirect: APIRoute["redirect"], view: string | null, kind: "error" | "success", message: string) {
+  const params = new URLSearchParams();
+
+  if (view) {
+    params.set("view", view);
+  }
+
+  params.set(kind, message);
+  return redirect(`/admin?${params.toString()}`);
+}
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
     const sessionUser = await readSessionUsername(cookies.get(getAdminCookieName())?.value);
 
     if (!sessionUser) {
-      return redirect("/admin?error=Sesión%20inválida");
+      return adminRedirect(redirect, null, "error", "Sesión inválida");
     }
 
     const formData = await request.formData();
@@ -21,18 +32,18 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const view = String(formData.get("view") || "pending");
 
     if (!id || (status !== "pending" && status !== "read")) {
-      return redirect(`/admin?view=${encodeURIComponent(view)}&error=Acción%20inválida`);
+      return adminRedirect(redirect, view, "error", "Acción inválida");
     }
 
     const updated = await updateQuoteStatus(id, status);
 
     if (!updated) {
-      return redirect(`/admin?view=${encodeURIComponent(view)}&error=Cotización%20no%20encontrada`);
+      return adminRedirect(redirect, view, "error", "Cotización no encontrada");
     }
 
-    return redirect(`/admin?view=${encodeURIComponent(view)}&success=Estado%20actualizado`);
+    return adminRedirect(redirect, view, "success", "Estado actualizado");
   } catch (error) {
     console.error("Update quote status failed:", error);
-    return redirect("/admin?error=No%20se%20pudo%20actualizar%20la%20cotización");
+    return adminRedirect(redirect, null, "error", "No se pudo actualizar la cotización");
   }
 };

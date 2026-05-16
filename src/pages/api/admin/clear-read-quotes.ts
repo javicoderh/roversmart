@@ -7,18 +7,24 @@ import {
 
 export const prerender = false;
 
+function adminRedirect(redirect: APIRoute["redirect"], kind: "error" | "success", message: string) {
+  const params = new URLSearchParams({ view: "read" });
+  params.set(kind, message);
+  return redirect(`/admin?${params.toString()}`);
+}
+
 export const POST: APIRoute = async ({ cookies, redirect }) => {
   try {
     const sessionUser = await readSessionUsername(cookies.get(getAdminCookieName())?.value);
 
     if (!sessionUser) {
-      return redirect("/admin?error=Sesión%20inválida");
+      return adminRedirect(redirect, "error", "Sesión inválida");
     }
 
     const removedCount = await clearReadQuotes();
-    return redirect(`/admin?view=read&success=${encodeURIComponent(`Se borraron ${removedCount} cotizaciones`)}`);
+    return adminRedirect(redirect, "success", `Se borraron ${removedCount} cotizaciones`);
   } catch (error) {
     console.error("Clear read quotes failed:", error);
-    return redirect("/admin?view=read&error=No%20se%20pudieron%20borrar%20las%20cotizaciones");
+    return adminRedirect(redirect, "error", "No se pudieron borrar las cotizaciones");
   }
 };

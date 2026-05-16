@@ -9,12 +9,18 @@ import {
 
 export const prerender = false;
 
+function adminRedirect(redirect: APIRoute["redirect"], kind: "error" | "success", message: string) {
+  const params = new URLSearchParams();
+  params.set(kind, message);
+  return redirect(`/admin?${params.toString()}`);
+}
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
     const sessionUser = await readSessionUsername(cookies.get(getAdminCookieName())?.value);
 
     if (!sessionUser) {
-      return redirect("/admin?error=Debes%20iniciar%20sesi%C3%B3n");
+      return adminRedirect(redirect, "error", "Debes iniciar sesión");
     }
 
     const formData = await request.formData();
@@ -22,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const password = String(formData.get("password") || "");
 
     if (username.length < 4 || password.length < 8) {
-      return redirect("/admin?error=Usuario%20o%20password%20inv%C3%A1lidos");
+      return adminRedirect(redirect, "error", "Usuario o password inválidos");
     }
 
     await updateAdminCredentials(username, password);
@@ -35,9 +41,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       maxAge: getSessionTtlSeconds()
     });
 
-    return redirect("/admin?success=Credenciales%20actualizadas");
+    return adminRedirect(redirect, "success", "Credenciales actualizadas");
   } catch (error) {
     console.error("Update admin credentials failed:", error);
-    return redirect("/admin?error=No%20se%20pudieron%20actualizar%20las%20credenciales");
+    return adminRedirect(redirect, "error", "No se pudieron actualizar las credenciales");
   }
 };
