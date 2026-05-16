@@ -24,7 +24,10 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  await appendQuoteRecord(quoteRecord);
+  await appendQuoteRecord({
+    ...quoteRecord,
+    status: "pending"
+  });
 
   const response = await fetch(formspreeEndpoint, {
     method: "POST",

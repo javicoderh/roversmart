@@ -447,6 +447,50 @@ main {
   gap: 12px;
 }
 
+.admin-quote-strip-shell {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-tab {
+  min-width: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-tab strong {
+  font-family: "Oxygen Mono", monospace;
+  font-size: 0.86rem;
+  font-weight: 400;
+}
+
+.admin-tab.is-active {
+  border-color: var(--ink);
+  background: rgba(20, 20, 20, 0.92);
+  color: #ffffff;
+}
+
 .admin-quote-tile,
 .admin-empty-state {
   padding: 16px;
@@ -555,6 +599,12 @@ main {
   margin-bottom: 18px;
 }
 
+.admin-modal__head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .admin-modal__head h2 {
   margin: 0;
   font-size: 1.45rem;
@@ -597,6 +647,18 @@ main {
   color: #ffffff;
   font-size: 1.3rem;
   cursor: pointer;
+}
+
+.admin-icon-button--success {
+  background: rgba(58, 120, 83, 0.12);
+  color: #275c39;
+  border-color: rgba(58, 120, 83, 0.24);
+}
+
+.admin-icon-button--danger {
+  background: rgba(155, 51, 51, 0.1);
+  color: #7b2525;
+  border-color: rgba(155, 51, 51, 0.2);
 }
 
 .admin-modal-grid {
@@ -721,6 +783,11 @@ main {
 
   .admin-minimal-head {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-toolbar {
+    align-items: stretch;
     flex-direction: column;
   }
 }
@@ -876,9 +943,15 @@ button:hover {
 .form-shell {
   display: grid;
   gap: 18px;
+  width: 100%;
+  justify-items: stretch;
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 280ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.form-shell {
+  --step-inner-width: min(100%, 900px);
 }
 
 .form-shell[hidden] {
@@ -898,6 +971,9 @@ button:hover {
   align-items: start;
   justify-items: center;
   padding: 12px 0 0;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 
 .steps-progress__track {
@@ -968,10 +1044,18 @@ button:hover {
 
 .form-stage {
   display: grid;
-  grid-template-columns: minmax(0, 860px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
-  justify-content: center;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.quote-form {
+  width: 100%;
+  display: grid;
+  gap: 18px;
 }
 
 .form-stage__main {
@@ -983,6 +1067,41 @@ button:hover {
   margin: 0;
   padding: 28px;
   border: 1px solid var(--line);
+}
+
+.quote-step[data-step="1"],
+.quote-step[data-step="2"] {
+  display: grid;
+  gap: 24px;
+  justify-items: stretch;
+  width: var(--step-inner-width);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.quote-step[data-step="1"] > .section-card-head,
+.quote-step[data-step="1"] > .project-card,
+.quote-step[data-step="1"] > .step-actions,
+.quote-step[data-step="2"] > .section-card-head,
+.quote-step[data-step="2"] > .project-card,
+.quote-step[data-step="2"] > .step-actions {
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+}
+
+.quote-step[data-step="1"] > .section-card-head,
+.quote-step[data-step="1"] > .project-card,
+.quote-step[data-step="1"] > .step-actions {
+  width: 100%;
+  margin-inline: 0;
+}
+
+.quote-step[data-step="2"] > .section-card-head,
+.quote-step[data-step="2"] > .project-card,
+.quote-step[data-step="2"] > .step-actions {
+  width: 100%;
+  margin-inline: 0;
 }
 
 .quote-step[hidden] {
@@ -1031,16 +1150,54 @@ button:hover {
   gap: 16px;
 }
 
+.field-grid--contact {
+  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-grid--contact .contact-name {
+  grid-column: 1;
+}
+
+.field-grid--contact .contact-email {
+  grid-column: 2;
+}
+
+.field-grid--contact .contact-phone {
+  grid-column: 1 / -1;
+}
+
+.field-grid--contact .contact-description {
+  grid-column: 1 / -1;
+}
+
+.step-surface {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 18px 46px rgba(20, 20, 20, 0.06);
+}
+
 .process-overview {
-  padding: 4px 2px 0;
+  padding: 0;
+  width: 100%;
 }
 
 .process-overview ol {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 22px;
+  list-style: decimal;
   display: grid;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   line-height: 1.55;
+}
+
+.process-overview li {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 label {
@@ -1292,10 +1449,56 @@ input[type="file"] {
   justify-self: center;
 }
 
-.form-status {
-  margin: 18px 0 0;
-  color: var(--accent-dark);
-  font-weight: 600;
+.submission-state {
+  width: 100%;
+  min-height: 360px;
+  padding: 48px 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(20, 20, 20, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.64)),
+    linear-gradient(145deg, rgba(114, 181, 164, 0.1), rgba(140, 115, 80, 0.08));
+  box-shadow: 0 24px 70px rgba(20, 20, 20, 0.1);
+  display: grid;
+  place-items: center;
+  gap: 18px;
+  text-align: center;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.submission-state[hidden] {
+  display: none;
+}
+
+.submission-state.is-success {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72)),
+    linear-gradient(145deg, rgba(114, 181, 164, 0.16), rgba(114, 181, 164, 0.08));
+}
+
+.submission-state__spinner {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 3px solid rgba(20, 20, 20, 0.12);
+  border-top-color: var(--accent-dark);
+  animation: submission-spin 900ms linear infinite;
+}
+
+.submission-state__message {
+  margin: 0;
+  max-width: 34ch;
+  font-family: "Oxygen Mono", monospace;
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+@keyframes submission-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ghost-button {
@@ -1645,6 +1848,18 @@ button:disabled {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .field-grid--contact,
+  .process-overview ol {
+    grid-template-columns: 1fr;
+  }
+
+  .field-grid--contact .contact-name,
+  .field-grid--contact .contact-email,
+  .field-grid--contact .contact-phone,
+  .field-grid--contact .contact-description {
+    grid-column: 1 / -1;
   }
 
   .mural-type-grid {

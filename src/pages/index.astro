@@ -439,24 +439,26 @@ const quoteSteps = [
                 </div>
               </div>
 
-              <div class="field-grid">
-                <label>
-                  Nombre
-                  <input type="text" name="nombre" placeholder="tu nombre / nombre empresa / marca" data-contact-field="nombre" />
-                </label>
-                <label>
-                  E-mail
-                  <input type="email" name="email" placeholder="nombre@correo.com" required data-contact-field="email" />
-                </label>
-                <label>
-                  Teléfono
-                  <input type="tel" name="telefono" placeholder="+56 9 ..." data-contact-field="telefono" />
-                </label>
-                <label class="full">
-                  Descripción del cliente
-                  <textarea name="tipo_cliente" rows="4" placeholder="describe a la persona, institución o marca que solicita el mural." data-contact-field="tipo_cliente"></textarea>
-                </label>
-              </div>
+              <article class="project-card">
+                <div class="field-grid field-grid--contact">
+                  <label class="contact-name">
+                    Nombre
+                    <input type="text" name="nombre" placeholder="tu nombre / nombre empresa / marca" data-contact-field="nombre" />
+                  </label>
+                  <label class="contact-email">
+                    E-mail
+                    <input type="email" name="email" placeholder="nombre@correo.com" required data-contact-field="email" />
+                  </label>
+                  <label class="contact-phone">
+                    Teléfono
+                    <input type="tel" name="telefono" placeholder="+56 9 ..." data-contact-field="telefono" />
+                  </label>
+                  <label class="contact-description">
+                    Descripción del cliente
+                    <textarea name="tipo_cliente" rows="6" placeholder="describe a la persona, institución o marca que solicita el mural." data-contact-field="tipo_cliente"></textarea>
+                  </label>
+                </div>
+              </article>
 
               <div class="step-actions">
                 <button type="button" class="ghost-button" data-step-prev>Atrás</button>
@@ -474,8 +476,9 @@ const quoteSteps = [
                 </div>
               </div>
 
-              <div class="process-overview">
-                <ol>
+              <article class="project-card">
+                <div class="process-overview">
+                  <ol>
                   <li>Cliente completa el formulario de cotización.</li>
                   <li>Cliente recibe la cotización en 3-5 días hábiles aprox. desde la solicitud.</li>
                   <li>De ser aprobada la cotización, el cliente debe abonar el 50% del ítem diseño.</li>
@@ -486,18 +489,20 @@ const quoteSteps = [
                   <li>Ejecución del mural.</li>
                   <li>Entrega del mural.</li>
                   <li>Pago final [máximo 5 días hábiles desde la entrega].</li>
-                </ol>
-              </div>
+                  </ol>
+                </div>
+              </article>
 
               <div class="step-actions">
                 <button type="button" class="ghost-button" data-step-prev>Atrás</button>
                 <button type="submit" data-submit-button>Enviar</button>
               </div>
             </fieldset>
-            <p class="form-status" data-submit-status aria-live="polite">
-              Respuesta estimada: 3-5 días.
-            </p>
           </div>
+          <section class="submission-state" data-submission-state hidden aria-live="polite" aria-hidden="true">
+            <div class="submission-state__spinner" data-submission-spinner aria-hidden="true"></div>
+            <p class="submission-state__message" data-submission-message>Preparando envío...</p>
+          </section>
         </div>
       </form>
 
@@ -526,6 +531,8 @@ const quoteSteps = [
 
   <script>
     const form = document.querySelector("[data-quote-form]");
+    const stepsProgress = document.querySelector(".steps-progress");
+    const formStage = document.querySelector(".form-stage");
     const stepPanels = Array.from(document.querySelectorAll("[data-step]"));
     const stepChips = Array.from(document.querySelectorAll("[data-step-chip]"));
     const nextButtons = Array.from(document.querySelectorAll("[data-step-next]"));
@@ -534,6 +541,9 @@ const quoteSteps = [
     const formShell = document.querySelector("[data-form-shell]");
     const submitStatus = document.querySelector("[data-submit-status]");
     const submitButton = document.querySelector("[data-submit-button]");
+    const submissionState = document.querySelector("[data-submission-state]");
+    const submissionMessage = document.querySelector("[data-submission-message]");
+    const submissionSpinner = document.querySelector("[data-submission-spinner]");
     const projectsList = document.querySelector("[data-projects-list]");
     const projectTemplate = document.querySelector("[data-project-template]");
     const addProjectButton = document.querySelector("[data-add-project]");
@@ -597,8 +607,20 @@ const quoteSteps = [
 
     const normalizeText = (value) => value.trim().replace(/\s+/g, " ");
     const toList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
-    const clearStatusToDefault = () => {
-      if (submitStatus) submitStatus.textContent = "Respuesta estimada: 3-5 días.";
+    const clearStatusToDefault = () => {};
+    const setSubmissionState = (message, { visible = true, success = false } = {}) => {
+      if (!(submissionState instanceof HTMLElement)) return;
+      submissionState.hidden = !visible;
+      submissionState.setAttribute("aria-hidden", visible ? "false" : "true");
+      submissionState.classList.toggle("is-success", success);
+      if (stepsProgress instanceof HTMLElement) {
+        stepsProgress.hidden = visible;
+      }
+      if (formStage instanceof HTMLElement) {
+        formStage.hidden = visible;
+      }
+      if (submissionMessage instanceof HTMLElement) submissionMessage.textContent = message;
+      if (submissionSpinner instanceof HTMLElement) submissionSpinner.hidden = success;
     };
 
     const getProjects = () => Array.from(projectsList?.querySelectorAll("[data-project-card]") || []);
@@ -1116,9 +1138,10 @@ const quoteSteps = [
           submitButton.disabled = true;
           submitButton.textContent = "Enviando...";
         }
-        if (submitStatus) submitStatus.textContent = "Subiendo imágenes...";
+        setSubmissionState("Subiendo imágenes...");
         const projects = [];
         for (const [index, card] of getProjects().entries()) {
+          setSubmissionState(`Subiendo imágenes del proyecto ${index + 1} de ${getProjects().length}...`);
           projects.push(await readProject(card, index));
         }
         const contact = {
@@ -1128,7 +1151,7 @@ const quoteSteps = [
           tipo_cliente: (contactFields.tipo_cliente?.value || "").trim()
         };
         const payload = buildSubmissionPayload(contact, projects);
-        if (submitStatus) submitStatus.textContent = "Enviando solicitud...";
+        setSubmissionState("Enviando solicitud...");
         const response = await fetch("/api/quotes", {
           method: "POST",
           headers: {
@@ -1149,8 +1172,10 @@ const quoteSteps = [
         refreshProjectsUI();
         getProjects().forEach((card) => syncProjectCounts(card));
         setStep(0);
-        if (submitStatus) submitStatus.textContent = "Solicitud enviada correctamente.";
+        clearStatusToDefault();
+        setSubmissionState("Tu cotización ha sido ingresada, recibirás respuesta en 3-5 días hábiles aprox.", { success: true });
       } catch (error) {
+        setSubmissionState(error instanceof Error ? error.message : "Ocurrió un problema al enviar la solicitud.", { visible: false });
         if (submitStatus) submitStatus.textContent = error instanceof Error ? error.message : "Ocurrió un problema al enviar la solicitud.";
       } finally {
         if (submitButton instanceof HTMLButtonElement) {

@@ -8,6 +8,7 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 export type QuoteRecord = {
   id: string;
   createdAt: string;
+  status: "pending" | "read";
   contact: {
     name: string;
     email: string;
@@ -42,6 +43,13 @@ type AdminState = {
   };
   quotes: QuoteRecord[];
 };
+
+function normalizeQuoteRecord(quote: any): QuoteRecord {
+  return {
+    ...quote,
+    status: quote.status === "read" ? "read" : "pending"
+  };
+}
 
 function getStateSecret() {
   const secret = import.meta.env.ADMIN_STATE_SECRET || import.meta.env.BLOB_READ_WRITE_TOKEN;
@@ -144,13 +152,35 @@ export async function loadAdminState() {
   }
 
   const rawPayload = await response.text();
-  return decryptState(rawPayload);
+  const state = decryptState(rawPayload);
+  state.quotes = state.quotes.map(normalizeQuoteRecord);
+  return state;
 }
 
 export async function appendQuoteRecord(quote: QuoteRecord) {
   const state = await loadAdminState();
-  state.quotes.unshift(quote);
+  state.quotes.unshift(normalizeQuoteRecord(quote));
   await saveState(state);
+}
+
+export async function updateQuoteStatus(id: string, status: QuoteRecord["status"]) {
+  const state = await loadAdminState();
+  const quote = state.quotes.find((entry) => entry.id === id);
+
+  if (!quote) return false;
+
+  quote.status = status;
+  await saveState(state);
+  return true;
+}
+
+export async function clearReadQuotes() {
+  const state = await loadAdminState();
+  const nextQuotes = state.quotes.filter((quote) => normalizeQuoteRecord(quote).status !== "read");
+  const removedCount = state.quotes.length - nextQuotes.length;
+  state.quotes = nextQuotes;
+  await saveState(state);
+  return removedCount;
 }
 
 export async function updateAdminCredentials(username: string, password: string) {

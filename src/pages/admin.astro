@@ -7,8 +7,10 @@ const sessionUser = await readSessionUsername(Astro.cookies.get(getAdminCookieNa
 const state = sessionUser ? await loadAdminState() : null;
 const errorMessage = Astro.url.searchParams.get("error");
 const successMessage = Astro.url.searchParams.get("success");
+const currentView = Astro.url.searchParams.get("view") === "read" ? "read" : "pending";
 const adminQuotes = (state?.quotes || []).map((quote: any) => ({
   ...quote,
+  status: quote.status === "read" ? "read" : "pending",
   projects: quote.projects?.length
     ? quote.projects
     : [{
@@ -29,6 +31,9 @@ const adminQuotes = (state?.quotes || []).map((quote: any) => ({
         referenciasUrls: quote.assets?.referenciasUrls || []
       }]
 }));
+const pendingQuotes = adminQuotes.filter((quote) => quote.status !== "read");
+const readQuotes = adminQuotes.filter((quote) => quote.status === "read");
+const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
 ---
 
 <BaseLayout title="Admin | Cotizador Rover Smart" description="Panel de administración de cotizaciones.">
@@ -70,23 +75,47 @@ const adminQuotes = (state?.quotes || []).map((quote: any) => ({
           <span class="admin-mini-stat__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM8 8h8M8 12h8M8 16h5"/></svg>
           </span>
-          <strong>{adminQuotes.length || 0}</strong>
+          <strong>{pendingQuotes.length || 0}</strong>
         </article>
 
         <article class="admin-mini-stat">
           <span class="admin-mini-stat__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20a7 7 0 0 1 14 0"/></svg>
           </span>
-          <strong>{sessionUser || "guest"}</strong>
+          <strong>{readQuotes.length || 0}</strong>
         </article>
       </section>
 
       {
         sessionUser ? (
-          <section class="admin-quote-strip">
+          <section class="admin-quote-strip-shell">
+            <div class="admin-toolbar">
+              <nav class="admin-tabs" aria-label="Filtros de cotización">
+                <a class:list={["admin-tab", currentView === "pending" && "is-active"]} href="/admin">
+                  <span aria-hidden="true">◉</span>
+                  <strong>{pendingQuotes.length}</strong>
+                </a>
+                <a class:list={["admin-tab", currentView === "read" && "is-active"]} href="/admin?view=read">
+                  <span aria-hidden="true">◎</span>
+                  <strong>{readQuotes.length}</strong>
+                </a>
+              </nav>
+
+              {
+                currentView === "read" ? (
+                  <form method="POST" action="/api/admin/clear-read-quotes">
+                    <button class="admin-icon-button admin-icon-button--danger" type="submit" title="Borrar contestadas" aria-label="Borrar contestadas">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-8 0 .7 11.1A2 2 0 0 0 9.7 20h4.6a2 2 0 0 0 2-1.9L17 7M10 10.5v5M14 10.5v5"/></svg>
+                    </button>
+                  </form>
+                ) : null
+              }
+            </div>
+
+            <section class="admin-quote-strip">
             {
-              adminQuotes.length ? (
-                adminQuotes.map((quote, index) => (
+              visibleQuotes.length ? (
+                visibleQuotes.map((quote, index) => (
                   <>
                     <button class="admin-quote-tile" type="button" data-modal-trigger={`quote-modal-${index}`} title={`Ver ${quote.contact.name || "cotización"}`} aria-label={`Ver ${quote.contact.name || "cotización"}`}>
                       <span class="admin-quote-tile__top">
@@ -109,9 +138,24 @@ const adminQuotes = (state?.quotes || []).map((quote: any) => ({
                             <p class="eyebrow">Cotización</p>
                             <h2>{quote.contact.name || "Sin nombre"}</h2>
                           </div>
-                          <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
-                            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
-                          </button>
+                          <div class="admin-modal__head-actions">
+                            <form method="POST" action="/api/admin/update-quote-status">
+                              <input type="hidden" name="id" value={quote.id} />
+                              <input type="hidden" name="status" value={quote.status === "read" ? "pending" : "read"} />
+                              <input type="hidden" name="view" value={currentView} />
+                              <button
+                                class:list={["admin-icon-button", quote.status === "read" ? "admin-icon-button--soft" : "admin-icon-button--success"]}
+                                type="submit"
+                                title={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
+                                aria-label={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
+                              >
+                                <svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7.5"/></svg>
+                              </button>
+                            </form>
+                            <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
+                              <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                            </button>
+                          </div>
                         </div>
 
                         <div class="admin-modal-grid">
@@ -190,10 +234,11 @@ const adminQuotes = (state?.quotes || []).map((quote: any) => ({
               ) : (
                 <article class="admin-empty-state">
                   <span aria-hidden="true">◎</span>
-                  <p>Sin cotizaciones.</p>
+                  <p>{currentView === "read" ? "Sin contestadas." : "Sin pendientes."}</p>
                 </article>
               )
             }
+            </section>
           </section>
         ) : (
           <section class="admin-empty-state admin-empty-state--login">
