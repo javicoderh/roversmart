@@ -1,0 +1,296 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/global.css";
+import { getAdminCookieName, loadAdminState, readSessionUsername } from "../lib/admin-state";
+
+const sessionUser = await readSessionUsername(Astro.cookies.get(getAdminCookieName())?.value);
+const state = sessionUser ? await loadAdminState() : null;
+const errorMessage = Astro.url.searchParams.get("error");
+const successMessage = Astro.url.searchParams.get("success");
+const adminQuotes = (state?.quotes || []).map((quote: any) => ({
+  ...quote,
+  projects: quote.projects?.length
+    ? quote.projects
+    : [{
+        id: quote.id,
+        title: "Proyecto 1",
+        alto: quote.project?.alto || "",
+        ancho: quote.project?.ancho || "",
+        ubicacion: quote.project?.ubicacion || "",
+        estado: quote.project?.estado || "",
+        bodegaDisponible: Boolean(quote.project?.bodegaDisponible),
+        estacionamientoDisponible: Boolean(quote.project?.estacionamientoDisponible),
+        descripcionMuro: quote.project?.descripcionMuro || "",
+        tiposMural: quote.creative?.tiposMural || [],
+        uso: quote.creative?.uso || "",
+        idea: quote.creative?.idea || "",
+        proteccion: quote.creative?.proteccion || [],
+        fotoFrontalUrls: quote.assets?.fotoFrontalUrls || [],
+        referenciasUrls: quote.assets?.referenciasUrls || []
+      }]
+}));
+---
+
+<BaseLayout title="Admin | Cotizador Rover Smart" description="Panel de administración de cotizaciones.">
+  <main class="page-shell admin-page admin-page--minimal">
+    <section class="admin-minimal-shell">
+      <header class="admin-minimal-head">
+        <div>
+          <p class="eyebrow">Admin</p>
+          <h1>Rover Smart</h1>
+        </div>
+
+        <div class="admin-icon-bar" aria-label="Acciones del panel">
+          {
+            sessionUser ? (
+              <>
+                <button class="admin-icon-button" type="button" data-modal-trigger="credentials-modal" title="Cambiar credenciales" aria-label="Cambiar credenciales">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4 4 0 0 0-4 4v2H6.5A2.5 2.5 0 0 0 4 11.5v7A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 17.5 9H16V7a4 4 0 0 0-4-4Zm-2 6V7a2 2 0 1 1 4 0v2"/></svg>
+                </button>
+                <form method="POST" action="/api/admin/logout">
+                  <button class="admin-icon-button" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19H10M14 16l4-4-4-4M18 12H9"/></svg>
+                  </button>
+                </form>
+              </>
+            ) : (
+              <button class="admin-icon-button" type="button" data-modal-trigger="login-modal" title="Entrar" aria-label="Entrar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19H10M14 16l4-4-4-4M18 12H9"/></svg>
+              </button>
+            )
+          }
+        </div>
+      </header>
+
+      {errorMessage ? <p class="admin-flash admin-flash--error">{errorMessage}</p> : null}
+      {successMessage ? <p class="admin-flash admin-flash--success">{successMessage}</p> : null}
+
+      <section class="admin-minimal-summary">
+        <article class="admin-mini-stat">
+          <span class="admin-mini-stat__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM8 8h8M8 12h8M8 16h5"/></svg>
+          </span>
+          <strong>{adminQuotes.length || 0}</strong>
+        </article>
+
+        <article class="admin-mini-stat">
+          <span class="admin-mini-stat__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20a7 7 0 0 1 14 0"/></svg>
+          </span>
+          <strong>{sessionUser || "guest"}</strong>
+        </article>
+      </section>
+
+      {
+        sessionUser ? (
+          <section class="admin-quote-strip">
+            {
+              adminQuotes.length ? (
+                adminQuotes.map((quote, index) => (
+                  <>
+                    <button class="admin-quote-tile" type="button" data-modal-trigger={`quote-modal-${index}`} title={`Ver ${quote.contact.name || "cotización"}`} aria-label={`Ver ${quote.contact.name || "cotización"}`}>
+                      <span class="admin-quote-tile__top">
+                        <span class="admin-quote-tile__avatar">{(quote.contact.name || "?").slice(0, 1).toUpperCase()}</span>
+                        <span class="admin-quote-tile__icons" aria-hidden="true">
+                          <svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Zm0 .5 8 5 8-5"/></svg>
+                          <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM8 8h8M8 12h8M8 16h5"/></svg>
+                        </span>
+                      </span>
+                      <span class="admin-quote-tile__meta">
+                        <strong>{quote.contact.name || "Sin nombre"}</strong>
+                        <small>{quote.projects.length} proyecto{quote.projects.length === 1 ? "" : "s"}</small>
+                      </span>
+                    </button>
+
+                    <dialog class="admin-modal" id={`quote-modal-${index}`}>
+                      <div class="admin-modal__surface admin-modal__surface--wide">
+                        <div class="admin-modal__head">
+                          <div>
+                            <p class="eyebrow">Cotización</p>
+                            <h2>{quote.contact.name || "Sin nombre"}</h2>
+                          </div>
+                          <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
+                            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                          </button>
+                        </div>
+
+                        <div class="admin-modal-grid">
+                          <section class="admin-modal-block">
+                            <span class="admin-modal-block__icon" aria-hidden="true">
+                              <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20a7 7 0 0 1 14 0"/></svg>
+                            </span>
+                            <div>
+                              <strong>{quote.contact.email || "-"}</strong>
+                              <p>{quote.contact.phone || "-"}</p>
+                              <p>{quote.contact.clientDescription || "-"}</p>
+                            </div>
+                          </section>
+                        </div>
+
+                        <div class="admin-projects-list">
+                          {
+                            quote.projects.map((project) => (
+                              <section class="admin-project-card">
+                                <div class="admin-project-card__head">
+                                  <strong>{project.title}</strong>
+                                  <span>{project.alto}m × {project.ancho}m</span>
+                                </div>
+                                <div class="admin-modal-grid">
+                                  <section class="admin-modal-block">
+                                    <span class="admin-modal-block__icon" aria-hidden="true">
+                                      <svg viewBox="0 0 24 24"><path d="M5 19V8l7-4 7 4v11M9 19v-5h6v5"/></svg>
+                                    </span>
+                                    <div>
+                                      <strong>{project.ubicacion || "-"}</strong>
+                                      <p>{project.estado || "-"}</p>
+                                      <p>{project.descripcionMuro || "-"}</p>
+                                    </div>
+                                  </section>
+                                  <section class="admin-modal-block">
+                                    <span class="admin-modal-block__icon" aria-hidden="true">
+                                      <svg viewBox="0 0 24 24"><path d="M5 18h14M7 14l3-3 2 2 5-5"/></svg>
+                                    </span>
+                                    <div>
+                                      <strong>{project.tiposMural.join(", ") || "-"}</strong>
+                                      <p>{project.uso || "-"}</p>
+                                      <p>{project.proteccion.join(", ") || "Sin protección"}</p>
+                                    </div>
+                                  </section>
+                                </div>
+                                <section class="admin-modal-copy">
+                                  <strong>Idea</strong>
+                                  <p>{project.idea || "-"}</p>
+                                </section>
+                                <div class="admin-modal-flags">
+                                  <span>{project.bodegaDisponible ? "◉ bodega" : "○ bodega"}</span>
+                                  <span>{project.estacionamientoDisponible ? "◉ estacionamiento" : "○ estacionamiento"}</span>
+                                </div>
+                                <div class="admin-modal-assets">
+                                  <div>
+                                    <strong>Fotos</strong>
+                                    <div class="admin-link-pack">
+                                      {project.fotoFrontalUrls.map((url) => <a href={url} target="_blank" rel="noreferrer">◱</a>)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <strong>Refs</strong>
+                                    <div class="admin-link-pack">
+                                      {project.referenciasUrls.length ? project.referenciasUrls.map((url) => <a href={url} target="_blank" rel="noreferrer">◱</a>) : <span>—</span>}
+                                    </div>
+                                  </div>
+                                </div>
+                              </section>
+                            ))
+                          }
+                        </div>
+                      </div>
+                    </dialog>
+                  </>
+                ))
+              ) : (
+                <article class="admin-empty-state">
+                  <span aria-hidden="true">◎</span>
+                  <p>Sin cotizaciones.</p>
+                </article>
+              )
+            }
+          </section>
+        ) : (
+          <section class="admin-empty-state admin-empty-state--login">
+            <span aria-hidden="true">◌</span>
+            <p>Acceso cerrado.</p>
+          </section>
+        )
+      }
+    </section>
+
+    <dialog class="admin-modal" id="login-modal" data-open-default={!sessionUser ? "true" : "false"}>
+      <div class="admin-modal__surface">
+        <div class="admin-modal__head">
+          <div>
+            <p class="eyebrow">Acceso</p>
+            <h2>Entrar</h2>
+          </div>
+          <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <form class="admin-form admin-form--minimal" method="POST" action="/api/admin/login">
+          <label>
+            <span>◯</span>
+            <input type="text" name="username" value="RoverSmartArt" autocomplete="username" required />
+          </label>
+          <label>
+            <span>◌</span>
+            <input type="password" name="password" value="RoverSmartArt" autocomplete="current-password" required />
+          </label>
+          <button type="submit">→</button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog class="admin-modal" id="credentials-modal">
+      <div class="admin-modal__surface">
+        <div class="admin-modal__head">
+          <div>
+            <p class="eyebrow">Acceso</p>
+            <h2>Cambiar</h2>
+          </div>
+          <button class="admin-icon-button admin-icon-button--soft" type="button" data-modal-close title="Cerrar" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <form class="admin-form admin-form--minimal" method="POST" action="/api/admin/update-credentials">
+          <label>
+            <span>◯</span>
+            <input type="text" name="username" value={state?.credentials.username || "RoverSmartArt"} minlength="4" required />
+          </label>
+          <label>
+            <span>◌</span>
+            <input type="password" name="password" minlength="8" placeholder="nuevo password" required />
+          </label>
+          <button type="submit">↺</button>
+        </form>
+      </div>
+    </dialog>
+  </main>
+
+  <script>
+    const modalTriggers = Array.from(document.querySelectorAll("[data-modal-trigger]"));
+    const closeButtons = Array.from(document.querySelectorAll("[data-modal-close]"));
+    const defaultModal = document.querySelector('[data-open-default="true"]');
+
+    const openModal = (id) => {
+      const modal = document.getElementById(id);
+      if (modal instanceof HTMLDialogElement && !modal.open) {
+        modal.showModal();
+      }
+    };
+
+    modalTriggers.forEach((trigger) => {
+      trigger.addEventListener("click", () => {
+        openModal(trigger.getAttribute("data-modal-trigger") || "");
+      });
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        button.closest("dialog")?.close();
+      });
+    });
+
+    document.querySelectorAll("dialog").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.close();
+        }
+      });
+    });
+
+    if (defaultModal instanceof HTMLDialogElement) {
+      defaultModal.showModal();
+    }
+  </script>
+</BaseLayout>

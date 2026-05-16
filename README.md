@@ -25,22 +25,17 @@ cp .env.sample .env
 Luego completa:
 
 ```text
-PUBLIC_CLOUDINARY_CLOUD_NAME=
-PUBLIC_CLOUDINARY_UPLOAD_PRESET=
 PUBLIC_FORMSPREE_ENDPOINT=
+BLOB_READ_WRITE_TOKEN=
+ADMIN_STATE_SECRET=
 ```
 
-### Cloudinary
+## Servicios
 
-- Crea un `unsigned upload preset`
-- Usa tu `cloud name`
-- Las imágenes del formulario se subirán primero a Cloudinary y luego sus URLs se enviarán a Formspree
-
-### Formspree
-
-- Crea un formulario en Formspree
-- Copia el endpoint tipo `https://formspree.io/f/xxxxx`
-- Ese endpoint recibirá todos los campos del cotizador y los links de las imágenes
+- `Formspree` recibe los datos del formulario
+- `Vercel Blob` recibe las imágenes a través de `src/pages/api/upload-image.ts`
+- El token `BLOB_READ_WRITE_TOKEN` puede reutilizarse desde otro proyecto del mismo equipo si apunta al mismo store
+- `ADMIN_STATE_SECRET` cifra el estado interno del admin y las cotizaciones persistidas
 
 ## Build
 
@@ -48,7 +43,7 @@ PUBLIC_FORMSPREE_ENDPOINT=
 npm run build
 ```
 
-El proyecto esta preparado como sitio estatico, por lo que puede desplegarse directamente en Vercel sin adaptador extra.
+El proyecto usa un endpoint serverless para subir imágenes, por lo que debe desplegarse en Vercel con adapter.
 
 ## Despliegue en Vercel
 
@@ -59,21 +54,12 @@ El proyecto esta preparado como sitio estatico, por lo que puede desplegarse dir
 
 ```text
 Build Command: npm run build
-Output Directory: dist
 Install Command: npm install
 ```
-
-## Siguiente integracion recomendada
-
-La interfaz ya esta lista para conectar el formulario a:
-
-- Formspree si quieres la opcion mas simple
-- Supabase si luego quieres guardar datos e imagenes
-- Cloudinary si quieres manejar cargas de imagenes por separado
 
 ## Flujo actual de envio
 
 1. El cliente completa el formulario
-2. Las imágenes se suben a Cloudinary
-3. El formulario envía los datos a Formspree
-4. En tu correo llegan los campos del formulario y las URLs de cada imagen
+2. Las imágenes se optimizan en el navegador
+3. Las imágenes se suben a Vercel Blob
+4. El formulario envía a Formspree los datos y las URLs públicas de las imágenes
