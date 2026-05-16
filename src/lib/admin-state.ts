@@ -1,7 +1,8 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { list, put } from "@vercel/blob";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
+import { get, list, put } from "@vercel/blob";
 
-const STATE_PATH = "private/cotizador-admin-state.json";
+const LEGACY_STATE_PATH = "private/cotizador-admin-state.json";
+const STATE_PREFIX = "private/cotizador-admin-state/";
 const COOKIE_NAME = "cotizador_admin_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
@@ -61,8 +62,21 @@ function getStateSecret() {
   return secret;
 }
 
-function deriveEncryptionKey() {
-  return createHash("sha256").update(getStateSecret()).digest();
+function getStateSecretCandidates() {
+  const secrets = [
+    import.meta.env.ADMIN_STATE_SECRET,
+    import.meta.env.BLOB_READ_WRITE_TOKEN
+  ].filter((value): value is string => Boolean(value));
+
+  if (!secrets.length) {
+    throw new Error("Falta configurar ADMIN_STATE_SECRET o BLOB_READ_WRITE_TOKEN.");
+  }
+
+  return [...new Set(secrets)];
+}
+
+function deriveEncryptionKey(secret: string) {
+  return createHash("sha256").update(secret).digest();
 }
 
 function sign(value: string) {
@@ -75,7 +89,7 @@ function hashPassword(password: string, salt: string) {
 
 function createEncryptedPayload(state: AdminState) {
   const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", deriveEncryptionKey(), iv);
+  const cipher = createCipheriv("aes-256-gcm", deriveEncryptionKey(getStateSecret()), iv);
   const encrypted = Buffer.concat([cipher.update(JSON.stringify(state), "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
 
@@ -86,11 +100,11 @@ function createEncryptedPayload(state: AdminState) {
   });
 }
 
-function decryptState(payload: string) {
+function tryDecryptState(payload: string, secret: string) {
   const parsed = JSON.parse(payload) as { iv: string; tag: string; data: string };
   const decipher = createDecipheriv(
     "aes-256-gcm",
-    deriveEncryptionKey(),
+    deriveEncryptionKey(secret),
     Buffer.from(parsed.iv, "base64")
   );
 
@@ -104,14 +118,86 @@ function decryptState(payload: string) {
   return JSON.parse(decrypted) as AdminState;
 }
 
-async function findStateBlobUrl() {
+function decryptState(payload: string) {
+  let lastError: unknown = null;
+
+  for (const secret of getStateSecretCandidates()) {
+    try {
+      return tryDecryptState(payload, secret);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("No se pudo descifrar el estado del administrador.");
+}
+
+type StateBlobRef = {
+  pathname: string;
+  url: string;
+  uploadedAt?: Date;
+};
+
+async function findLegacyStateBlob() {
   const result = await list({
-    prefix: STATE_PATH,
+    prefix: LEGACY_STATE_PATH,
     token: import.meta.env.BLOB_READ_WRITE_TOKEN
   });
 
-  const match = result.blobs.find((blob) => blob.pathname === STATE_PATH);
-  return match?.url ?? null;
+  const match = result.blobs.find((blob) => blob.pathname === LEGACY_STATE_PATH);
+  return match ? { pathname: match.pathname, url: match.url, uploadedAt: match.uploadedAt } : null;
+}
+
+async function findLatestVersionedStateBlob() {
+  const result = await list({
+    prefix: STATE_PREFIX,
+    token: import.meta.env.BLOB_READ_WRITE_TOKEN
+  });
+
+  const latest = [...result.blobs]
+    .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())[0];
+
+  return latest ? { pathname: latest.pathname, url: latest.url, uploadedAt: latest.uploadedAt } : null;
+}
+
+async function loadStatePayloadFromPrivateBlob(pathname: string) {
+  try {
+    const blob = await get(pathname, {
+      access: "private",
+      useCache: false,
+      token: import.meta.env.BLOB_READ_WRITE_TOKEN
+    });
+
+    if (!blob || blob.statusCode !== 200 || !blob.stream) {
+      return null;
+    }
+
+    return await new Response(blob.stream).text();
+  } catch {
+    return null;
+  }
+}
+
+async function loadStatePayloadFromPublicUrl(blobUrl: string) {
+  try {
+    const url = new URL(blobUrl);
+    url.searchParams.set("_ts", Date.now().toString());
+
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        "cache-control": "no-cache"
+      }
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.text();
+  } catch {
+    return null;
+  }
 }
 
 function createDefaultState(): AdminState {
@@ -128,32 +214,70 @@ function createDefaultState(): AdminState {
 }
 
 async function saveState(state: AdminState) {
-  await put(STATE_PATH, createEncryptedPayload(state), {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json",
-    token: import.meta.env.BLOB_READ_WRITE_TOKEN
-  });
+  const payload = createEncryptedPayload(state);
+  const pathname = `${STATE_PREFIX}${Date.now()}-${randomUUID().slice(0, 8)}.json`;
+
+  try {
+    await put(pathname, payload, {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: false,
+      contentType: "application/json",
+      token: import.meta.env.BLOB_READ_WRITE_TOKEN
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (!message.includes("Cannot use private access on a public store")) {
+      throw error;
+    }
+
+    await put(pathname, payload, {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: false,
+      contentType: "application/json",
+      token: import.meta.env.BLOB_READ_WRITE_TOKEN
+    });
+  }
 }
 
 export async function loadAdminState() {
-  const blobUrl = await findStateBlobUrl();
+  const versionedBlob = await findLatestVersionedStateBlob();
 
-  if (!blobUrl) {
+  if (versionedBlob) {
+    const rawPayload =
+      await loadStatePayloadFromPrivateBlob(versionedBlob.pathname)
+      ?? await loadStatePayloadFromPublicUrl(versionedBlob.url);
+
+    if (!rawPayload) {
+      throw new Error("No se pudo leer el estado del administrador.");
+    }
+
+    const state = decryptState(rawPayload);
+    state.quotes = state.quotes.map(normalizeQuoteRecord);
+    return state;
+  }
+
+  const legacyBlob = await findLegacyStateBlob();
+
+  if (!legacyBlob) {
     const defaultState = createDefaultState();
     await saveState(defaultState);
     return defaultState;
   }
 
-  const response = await fetch(blobUrl);
-  if (!response.ok) {
+  const rawPayload =
+    await loadStatePayloadFromPrivateBlob(legacyBlob.pathname)
+    ?? await loadStatePayloadFromPublicUrl(legacyBlob.url);
+
+  if (!rawPayload) {
     throw new Error("No se pudo leer el estado del administrador.");
   }
 
-  const rawPayload = await response.text();
   const state = decryptState(rawPayload);
   state.quotes = state.quotes.map(normalizeQuoteRecord);
+  await saveState(state);
   return state;
 }
 

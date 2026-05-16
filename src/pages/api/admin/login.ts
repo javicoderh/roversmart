@@ -8,10 +8,27 @@ import {
 
 export const prerender = false;
 
+function wantsJson(request: Request) {
+  return request.headers.get("x-requested-with") === "fetch";
+}
+
 function adminRedirect(redirect: APIRoute["redirect"], kind: "error" | "success", message: string) {
   const params = new URLSearchParams();
   params.set(kind, message);
   return redirect(kind === "success" ? `/admin?${params.toString()}` : `/admin?${params.toString()}`);
+}
+
+function adminJson(kind: "error" | "success", message: string, status: number) {
+  const params = new URLSearchParams();
+  params.set(kind, message);
+
+  return new Response(JSON.stringify({
+    ok: kind === "success",
+    redirectTo: `/admin?${params.toString()}`
+  }), {
+    status,
+    headers: { "content-type": "application/json" }
+  });
 }
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -19,11 +36,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const formData = await request.formData();
     const username = String(formData.get("username") || "");
     const password = String(formData.get("password") || "");
+    const expectsJson = wantsJson(request);
 
     const isValid = await verifyAdminCredentials(username, password);
 
     if (!isValid) {
-      return adminRedirect(redirect, "error", "Credenciales inválidas");
+      return expectsJson
+        ? adminJson("error", "Credenciales inválidas", 401)
+        : adminRedirect(redirect, "error", "Credenciales inválidas");
     }
 
     cookies.set(getAdminCookieName(), createSessionCookieValue(username), {
@@ -34,9 +54,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       maxAge: getSessionTtlSeconds()
     });
 
-    return redirect("/admin");
+    return expectsJson
+      ? new Response(JSON.stringify({ ok: true, redirectTo: "/admin" }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      : redirect("/admin");
   } catch (error) {
     console.error("Admin login failed:", error);
-    return adminRedirect(redirect, "error", "No se pudo validar el acceso");
+    return wantsJson(request)
+      ? adminJson("error", "No se pudo validar el acceso", 500)
+      : adminRedirect(redirect, "error", "No se pudo validar el acceso");
   }
 };

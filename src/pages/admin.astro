@@ -3,9 +3,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/global.css";
 import { getAdminCookieName, loadAdminState, readSessionUsername } from "../lib/admin-state";
 
-const sessionUser = await readSessionUsername(Astro.cookies.get(getAdminCookieName())?.value);
-const state = sessionUser ? await loadAdminState() : null;
-const errorMessage = Astro.url.searchParams.get("error");
+let sessionUser: string | null = null;
+let state = null;
+let stateLoadError = "";
+
+try {
+  sessionUser = await readSessionUsername(Astro.cookies.get(getAdminCookieName())?.value);
+  state = sessionUser ? await loadAdminState() : null;
+} catch (error) {
+  console.error("Admin page load failed:", error);
+  sessionUser = null;
+  state = null;
+  stateLoadError = "No se pudo cargar el panel de administración. Intenta nuevamente.";
+}
+
+const errorMessage = stateLoadError || Astro.url.searchParams.get("error");
 const successMessage = Astro.url.searchParams.get("success");
 const currentView = Astro.url.searchParams.get("view") === "read" ? "read" : "pending";
 const adminQuotes = (state?.quotes || []).map((quote: any) => ({
@@ -71,18 +83,18 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
       {successMessage ? <p class="admin-flash admin-flash--success">{successMessage}</p> : null}
 
       <section class="admin-minimal-summary">
-        <article class="admin-mini-stat">
+        <article class="admin-mini-stat" data-summary-stat="pending">
           <span class="admin-mini-stat__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM8 8h8M8 12h8M8 16h5"/></svg>
           </span>
-          <strong>{pendingQuotes.length || 0}</strong>
+          <strong data-summary-count>{pendingQuotes.length || 0}</strong>
         </article>
 
-        <article class="admin-mini-stat">
+        <article class="admin-mini-stat" data-summary-stat="read">
           <span class="admin-mini-stat__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20a7 7 0 0 1 14 0"/></svg>
           </span>
-          <strong>{readQuotes.length || 0}</strong>
+          <strong data-summary-count>{readQuotes.length || 0}</strong>
         </article>
       </section>
 
@@ -91,13 +103,13 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
           <section class="admin-quote-strip-shell">
             <div class="admin-toolbar">
               <nav class="admin-tabs" aria-label="Filtros de cotización">
-                <a class:list={["admin-tab", currentView === "pending" && "is-active"]} href="/admin">
+                <a class:list={["admin-tab", currentView === "pending" && "is-active"]} href="/admin" data-tab-stat="pending">
                   <span aria-hidden="true">◉</span>
-                  <strong>{pendingQuotes.length}</strong>
+                  <strong data-tab-count>{pendingQuotes.length}</strong>
                 </a>
-                <a class:list={["admin-tab", currentView === "read" && "is-active"]} href="/admin?view=read">
+                <a class:list={["admin-tab", currentView === "read" && "is-active"]} href="/admin?view=read" data-tab-stat="read">
                   <span aria-hidden="true">◎</span>
-                  <strong>{readQuotes.length}</strong>
+                  <strong data-tab-count>{readQuotes.length}</strong>
                 </a>
               </nav>
 
@@ -116,7 +128,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             {
               visibleQuotes.length ? (
                 visibleQuotes.map((quote, index) => (
-                  <>
+                  <div data-quote-entry data-quote-id={quote.id} data-quote-status={quote.status}>
                     <button class="admin-quote-tile" type="button" data-modal-trigger={`quote-modal-${index}`} title={`Ver ${quote.contact.name || "cotización"}`} aria-label={`Ver ${quote.contact.name || "cotización"}`}>
                       <span class="admin-quote-tile__top">
                         <span class="admin-quote-tile__avatar">{(quote.contact.name || "?").slice(0, 1).toUpperCase()}</span>
@@ -146,6 +158,7 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
                               <button
                                 class:list={["admin-icon-button", quote.status === "read" ? "admin-icon-button--soft" : "admin-icon-button--success"]}
                                 type="submit"
+                                data-quote-status-submit
                                 title={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
                                 aria-label={quote.status === "read" ? "Marcar pendiente" : "Marcar leída"}
                               >
@@ -229,10 +242,10 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
                         </div>
                       </div>
                     </dialog>
-                  </>
+                  </div>
                 ))
               ) : (
-                <article class="admin-empty-state">
+                <article class="admin-empty-state" data-admin-empty-state>
                   <span aria-hidden="true">◎</span>
                   <p>{currentView === "read" ? "Sin contestadas." : "Sin pendientes."}</p>
                 </article>
@@ -307,12 +320,68 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
     const closeButtons = Array.from(document.querySelectorAll("[data-modal-close]"));
     const defaultModal = document.querySelector('[data-open-default="true"]');
     const adminForms = Array.from(document.querySelectorAll('form[action^="/api/admin/"]'));
+    const quoteStrip = document.querySelector(".admin-quote-strip");
+    const currentView = new URLSearchParams(window.location.search).get("view") === "read" ? "read" : "pending";
+    const emptyStateMessage = currentView === "read" ? "Sin contestadas." : "Sin pendientes.";
 
     const openModal = (id) => {
       const modal = document.getElementById(id);
       if (modal instanceof HTMLDialogElement && !modal.open) {
         modal.showModal();
       }
+    };
+
+    const getCountNode = (selector, status) => document.querySelector(`${selector}[data-${selector.includes("summary") ? "summary" : "tab"}-stat="${status}"] [data-${selector.includes("summary") ? "summary" : "tab"}-count]`);
+
+    const readCount = (node) => {
+      const value = Number(node?.textContent || "0");
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const setCount = (selector, status, value) => {
+      const node = getCountNode(selector, status);
+      if (node instanceof HTMLElement) {
+        node.textContent = String(Math.max(0, value));
+      }
+    };
+
+    const bumpStatusCount = (status, delta) => {
+      setCount("[data-summary-stat]", status, readCount(getCountNode("[data-summary-stat]", status)) + delta);
+      setCount("[data-tab-stat]", status, readCount(getCountNode("[data-tab-stat]", status)) + delta);
+    };
+
+    const ensureEmptyState = () => {
+      if (!(quoteStrip instanceof HTMLElement)) return;
+      const hasEntries = quoteStrip.querySelector("[data-quote-entry]");
+      const existingEmptyState = quoteStrip.querySelector("[data-admin-empty-state]");
+
+      if (hasEntries) {
+        existingEmptyState?.remove();
+        return;
+      }
+
+      if (existingEmptyState) return;
+
+      const emptyState = document.createElement("article");
+      emptyState.className = "admin-empty-state";
+      emptyState.setAttribute("data-admin-empty-state", "");
+      emptyState.innerHTML = `<span aria-hidden="true">◎</span><p>${emptyStateMessage}</p>`;
+      quoteStrip.appendChild(emptyState);
+    };
+
+    const removeVisibleQuoteEntry = (form) => {
+      const entry = form.closest("[data-quote-entry]");
+      const modal = form.closest("dialog");
+      const fromStatus = form.querySelector('input[name="status"]')?.value === "read" ? "pending" : "read";
+      const toStatus = form.querySelector('input[name="status"]')?.value;
+
+      if (!(entry instanceof HTMLElement) || (toStatus !== "pending" && toStatus !== "read")) return;
+
+      bumpStatusCount(fromStatus, -1);
+      bumpStatusCount(toStatus, 1);
+      modal?.close();
+      entry.remove();
+      ensureEmptyState();
     };
 
     modalTriggers.forEach((trigger) => {
@@ -352,11 +421,22 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             method: form.method || "POST",
             body: formData,
             credentials: "same-origin",
-            redirect: "follow"
+            headers: {
+              "x-requested-with": "fetch",
+              Accept: "application/json"
+            }
           });
 
-          if (response.redirected && response.url) {
-            window.location.assign(response.url);
+          const result = await response.json().catch(() => null);
+
+          if (result?.redirectTo) {
+            if (form.action.endsWith("/update-quote-status")) {
+              removeVisibleQuoteEntry(form);
+              return;
+            }
+            const targetUrl = new URL(result.redirectTo, window.location.origin);
+            targetUrl.searchParams.set("_ts", Date.now().toString());
+            window.location.replace(targetUrl.toString());
             return;
           }
 
@@ -364,7 +444,9 @@ const visibleQuotes = currentView === "read" ? readQuotes : pendingQuotes;
             throw new Error(`Request failed with status ${response.status}`);
           }
 
-          window.location.reload();
+          const fallbackUrl = new URL(window.location.href);
+          fallbackUrl.searchParams.set("_ts", Date.now().toString());
+          window.location.replace(fallbackUrl.toString());
         } catch (error) {
           console.error("Admin form submit failed:", error);
           controls.forEach((control) => {
